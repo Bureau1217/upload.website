@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,49 +25,22 @@ jobs:
     - name: Build static site
       run: npm run construction
 
-    - name: Create deployment archive
+    - name: Install sshpass and rsync
+      run: sudo apt-get update && sudo apt-get install -y sshpass rsync
+
+    - name: Deploy with rsync
+      env:
+        SSHPASS: ${{ secrets.SSH_PASSWORD }}
       run: |
-        cd .output/public
-        tar -czf ../../site.tar.gz .
+        rsync -avz --delete --stats \
+          -e "sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10" \
+          .output/public/ \
+          ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com:sites/upload-biennale.ch/
 
-    - name: Prepare deployment directory
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: 57-102620.ssh.hosting-ik.com
-        username: ${{ secrets.SSH_USERNAME }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: 22
-        timeout: 30s
-        command_timeout: 10s
-        script: |
-          mkdir -p sites/upload-biennale.ch
-          cd sites/upload-biennale.ch
-          rm -rf * 2>/dev/null || true
-          echo "Directory prepared"
-
-    - name: Transfer files
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: 57-102620.ssh.hosting-ik.com
-        username: ${{ secrets.SSH_USERNAME }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: 22
-        source: "site.tar.gz"
-        target: "sites/upload-biennale.ch/"
-        timeout: 60s
-
-    - name: Extract files
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: 57-102620.ssh.hosting-ik.com
-        username: ${{ secrets.SSH_USERNAME }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: 22
-        timeout: 30s
-        command_timeout: 10s
-        script: |
-          cd sites/upload-biennale.ch
-          tar -xzf site.tar.gz
-          rm site.tar.gz
-          echo "Deployment completed"
-          ls -la | head -10
+    - name: Verify deployment
+      env:
+        SSHPASS: ${{ secrets.SSH_PASSWORD }}
+      run: |
+        sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
+          ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com \
+          "ls -la sites/upload-biennale.ch/ | head -5"
