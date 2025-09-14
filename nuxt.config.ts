@@ -10,12 +10,15 @@ export default defineNuxtConfig({
   },
   app: {
     baseURL: '/',
-    buildAssetsDir: 'assets/',
+    buildAssetsDir: '_nuxt/',
     head: {
       link: [
         { rel: 'icon', type: 'image/png', href: '/Favicon_Upload.png' }
       ]
     }
+  },
+  experimental: {
+    payloadExtraction: false
   },
   vite: {
     build: {
