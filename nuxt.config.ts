@@ -22,7 +22,7 @@ export default defineNuxtConfig({
       }
     }
   },
-  devServer: { port: 3001 },
+  devServer: { port: 3000 },
   css: [
     '~/assets/_main.scss'
   ]

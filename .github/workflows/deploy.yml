@@ -3,42 +3,96 @@ name: Deploy Nuxt to Infomaniak
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
-        
-    - name: Clean install dependencies
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build static site
+      run: npm run construction
+
+    - name: Create deployment archive
       run: |
-        rm -rf node_modules package-lock.json
-        npm install
-      
-    - name: Generate static site
-      run: npm run generate
-      
-    - name: Deploy to server via SSH
+        cd .output/public
+        tar -czf ../../site.tar.gz .
+
+    - name: Upload and deploy to Infomaniak
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: 57-102620.ssh.hosting-ik.com
         username: ${{ secrets.SSH_USERNAME }}
         password: ${{ secrets.SSH_PASSWORD }}
         port: 22
+        timeout: 300s
+        command_timeout: 60s
         script: |
-          cd ~/sites/upload-biennale.ch/
-          git pull origin main
-          npm install
-          npm run generate
-          # Copy generated files to web root
-          cp -r .output/public/* ./
-          # Remove the old landing page
-          rm -f index.html.old
+          set -e
+
+          # Créer un backup de l'ancien site
+          if [ -d "sites/upload-biennale.ch/backup" ]; then
+            rm -rf sites/upload-biennale.ch/backup
+          fi
+
+          if [ -d "sites/upload-biennale.ch" ]; then
+            mkdir -p sites/upload-biennale.ch/backup
+            cp -r sites/upload-biennale.ch/* sites/upload-biennale.ch/backup/ 2>/dev/null || true
+          fi
+
+          # Créer le dossier si nécessaire
+          mkdir -p sites/upload-biennale.ch
+          cd sites/upload-biennale.ch
+
+          # Nettoyer les anciens fichiers (sauf backup)
+          find . -maxdepth 1 -not -name 'backup' -not -name '.' -exec rm -rf {} + 2>/dev/null || true
+
+          echo "Dossier nettoyé, prêt pour le déploiement"
+
+    - name: Transfer files
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: 57-102620.ssh.hosting-ik.com
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 22
+        source: "site.tar.gz"
+        target: "sites/upload-biennale.ch/"
+
+    - name: Extract and finalize deployment
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: 57-102620.ssh.hosting-ik.com
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 22
+        timeout: 120s
+        script: |
+          set -e
+          cd sites/upload-biennale.ch
+
+          # Extraire les fichiers
+          tar -xzf site.tar.gz
+          rm site.tar.gz
+
+          # Vérifier que les fichiers sont bien présents
+          if [ ! -f "index.html" ]; then
+            echo "Erreur: index.html non trouvé après extraction"
+            exit 1
+          fi
+
+          echo "Déploiement réussi!"
+          echo "Fichiers présents:"
+          ls -la
