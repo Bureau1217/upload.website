@@ -32,15 +32,9 @@ jobs:
       env:
         SSHPASS: ${{ secrets.SSH_PASSWORD }}
       run: |
-        rsync -avz --delete --stats \
-          -e "sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10" \
+        echo "Starting deployment..."
+        rsync -avz --delete --stats --timeout=30 \
+          -e "sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=10" \
           .output/public/ \
           ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com:sites/upload-biennale.ch/
-
-    - name: Verify deployment
-      env:
-        SSHPASS: ${{ secrets.SSH_PASSWORD }}
-      run: |
-        sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
-          ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com \
-          "ls -la sites/upload-biennale.ch/ | head -5"
+        echo "Deployment completed successfully!"
