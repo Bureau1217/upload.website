@@ -1,0 +1,44 @@
+name: Deploy Nuxt to Infomaniak
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Clean install dependencies
+      run: |
+        rm -rf node_modules package-lock.json
+        npm install
+      
+    - name: Generate static site
+      run: npm run generate
+      
+    - name: Deploy to server via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: 57-102620.ssh.hosting-ik.com
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: 22
+        script: |
+          cd ~/sites/upload-biennale.ch/
+          git pull origin main
+          npm install
+          npm run generate
+          # Copy generated files to web root
+          cp -r .output/public/* ./
+          # Remove the old landing page
+          rm -f index.html.old

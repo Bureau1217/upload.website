@@ -1,0 +1,464 @@
+/* ==========================================================================
+  LES VARIABLES
+  ========================================================================== */
+
+
+:root {
+
+  --border-width: 0.05rem;
+
+  // les couleurs //
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-gray: #D0D0D0;
+
+
+  // les typos //
+  --font-Helvetica: 'Helvetica', Arial, sans-serif;
+
+
+  // Tailles d'espacement
+  --space-xxs: 0.05rem;
+  --space-xs: 0.25rem;
+  --space-s: 0.5rem;
+  --space-m: 1rem;
+  --space-l: 1.5rem;
+  --space-xl: 2rem;
+  --space-xxl: 4rem;
+  --space-xxxl: 6rem;
+
+
+  // Border-radius
+  --radius-s: 1rem;
+  --radius-m: 2rem;
+  --radius-l: 3rem;
+  --radius-full: 9999px;
+
+
+  // Largeurs max
+  --container-width: min(100%, 1800px);
+}
+
+
+/* ==========================================================================
+  GLOBAL FONTS + HTML BASE
+  ========================================================================== */
+
+
+html {
+  font-family: var(--font-Helvetica);
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 20px;
+  font-weight: 400;
+  scroll-behavior: smooth;
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: var(--color-gray);
+}
+
+
+a {
+  color: inherit;
+  cursor: pointer;
+}
+
+
+
+
+
+
+/* ==========================================================================
+  TYPOGRAPHY
+  ========================================================================== */
+
+
+/* TITRES */
+
+h1 {
+  font-family: var(--font-Helvetica);
+  font-weight: bold;
+  font-size: clamp(2.5rem, 5vw, 3rem);
+  line-height: 1.15;
+  color: var(--color-black);
+  margin: 0;
+}
+
+
+h2 {
+  font-family: var(--font-Helvetica);
+  font-weight: bold;
+  font-size: clamp(2rem, 5vw, 2.5rem);
+  line-height: 1.15;
+  color: var(--color-black);
+  margin: 0;
+}
+
+h2.light {
+  font-weight: 400;
+  margin-bottom: var(--space-xl);
+}
+
+/* petit titre des articles */
+h3 {
+  font-family: var(--font-Helvetica);
+  font-weight: bold;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--color-black);
+  margin: 0;
+}
+
+h4 {
+  font-family: var(--font-Helvetica);
+  font-weight: bold;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  color: var(--color-black);
+  margin: 0;
+}
+
+h5 {
+  font-family: var(--font-Helvetica);
+  font-weight: bold;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--color-black);
+  margin: 0;
+}
+
+
+/* CORPS DE TEXTE */
+
+
+.body-1 {
+  font-family: var(--font-Helvetica);
+  font-weight: 400;
+  font-size: 1.2rem;
+  color: var(--color-black);
+}
+
+.body-2 {
+  font-family: var(--font-Helvetica);
+  font-weight: 400;
+  font-size: 1.3rem;
+  color: var(--color-black);
+  margin: 0;
+}
+
+p,
+li,
+span {
+  font-family: var(--font-Helvetica);
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--color-black);
+  margin: 0;
+}
+
+
+/* Fond */
+.bg-white {
+  background-color: var(--color-white);
+}
+
+
+.bg-gray {
+  background-color: var(--color-gray);
+}
+
+
+
+/* Layout utilitaires */
+.container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: min(100%, 1600px);
+  /* plus large qu'avant */
+  margin-inline: auto;
+  padding-inline: var(--space-l);
+  /* un peu plus fin */
+  padding-block: var(--space-l);
+}
+
+@media (max-width: 900px) {
+  .container {
+    padding-inline: var(--space-s);
+    padding-block: var(--space-l);
+  }
+}
+
+.section {
+  padding-block: var(--space-xl);
+  padding-inline: var(--space-xl);
+}
+
+@media (max-width: 900px) {
+  .section {
+    padding-inline: var(--space-s);
+    padding-block: var(--space-xs);
+  }
+}
+
+/* Border radius */
+.rounded-s {
+  border-radius: var(--radius-s);
+}
+
+
+.rounded-m {
+  border-radius: var(--radius-m);
+}
+
+
+.rounded-l {
+  border-radius: var(--radius-l);
+}
+
+
+.rounded-full {
+  border-radius: var(--radius-full);
+}
+
+
+/* Espacement rapide */
+.mt-0 {
+  margin-top: 0 !important;
+}
+
+
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+
+.mt-s {
+  margin-top: var(--space-s);
+}
+
+
+.mb-s {
+  margin-bottom: var(--space-s);
+}
+
+
+.pt-l {
+  padding-top: var(--space-l);
+}
+
+
+.pb-l {
+  padding-bottom: var(--space-l);
+}
+
+
+/* Alignements */
+.text-center {
+  text-align: center;
+}
+
+
+.text-left {
+  text-align: left;
+}
+
+
+/* Couleurs texte */
+.text-black {
+  color: var(--color-black);
+}
+
+
+.text-white {
+  color: var(--color-white);
+}
+
+
+.text-gray {
+  color: var(--color-gray);
+}
+
+
+/* Fond */
+.bg-white {
+  background-color: var(--color-white);
+}
+
+
+.bg-gray {
+  background-color: var(--color-gray);
+}
+
+
+
+
+/* images */
+
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+
+  .v-style-block.is-fill {
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/* Flex helpers */
+.flex {
+  display: flex;
+  gap: var(--space-m);
+}
+
+
+.flex-center {
+  justify-content: center;
+  align-items: center;
+}
+
+
+.flex-between {
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  padding-top: var(--space-l);
+}
+
+/* Grille responsive pour exposants et autres éléments */
+.grid-responsive {
+  display: grid;
+  gap: 0.5rem;
+  /* Marge plus fine entre les images */
+
+  /* Mobile: 1 colonne */
+  grid-template-columns: 1fr;
+
+  /* Petit tablet: 2 colonnes */
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Tablet: 3 colonnes */
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Desktop: 6 colonnes */
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* Séparateur de section */
+.section-separator {
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-black);
+  margin: 0;
+}
+
+/* Sections standardisées */
+.section {
+  margin-top: var(--space-xl);
+  padding-left: 2rem;
+  padding-right: 2rem;
+
+  @media (max-width: 768px) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Titres de section standardisés */
+.section-title {
+  margin-bottom: var(--space-l);
+  /* Marge en dessous du titre */
+}
+
+.two-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-xxl);
+
+  .col {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+
+    /* par défaut (mobile), autoriser à rétrécir */
+    min-width: 0;
+  }
+
+  .col-inner {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    /* permet au contenu flex de ne pas déborder */
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1200px) {
+  .two-cols {
+    flex-direction: column;
+    /* empile */
+    gap: var(--space-s);
+    /* gap plus petit */
+
+    .col {
+      width: 100%;
+      justify-content: flex-start;
+      min-width: 0;
+      /* évite le débordement */
+    }
+
+    .col-inner {
+      max-width: 100%;
+    }
+  }
+}
+
+/* DESKTOP : force une largeur mini */
+@media (min-width: 901px) {
+  .two-cols .col {
+    min-width: 400px;
+    /* appliqué uniquement en desktop */
+  }
+}
+
+/* Taille texte */
+.text-xs {
+  font-size: 0.75rem;
+}
+
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+
+.text-base {
+  font-size: 1rem;
+}
+
+
+.text-lg {
+  font-size: 1.25rem;
+}
