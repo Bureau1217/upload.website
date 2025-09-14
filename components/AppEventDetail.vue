@@ -81,7 +81,7 @@
     <!-- Réservation -->
     <div v-if="event.reservation_enabled === 'true' && event.reservation_url" class="event-reservation">
       <h3>Réservation</h3>
-      <p>Cet événement nécessite une réservation préalable.</p>
+      <p>Cet événement nécessite une réservation préalable</p>
       <AppButton>
         <a :href="event.reservation_url" target="_blank" class="reservation-link">
           Réserver ma place
