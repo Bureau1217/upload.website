@@ -30,7 +30,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         password: ${{ secrets.SSH_PASSWORD }}
         local-dir: .output/public/
-        server-dir: sites/upload-biennale.ch/
+        server-dir: srv/customer/sites/upload-biennale.ch/
         exclude: |
           **/.git*
           **/.git*/**
