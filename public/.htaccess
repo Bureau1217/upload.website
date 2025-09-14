@@ -1,6 +1,11 @@
 # Static site configuration for Nuxt
 RewriteEngine On
 
+# Cache busting - force reload on new deployments
+Header always set Cache-Control "no-cache, no-store, must-revalidate" "expr=%{REQUEST_URI} =~ m#^/_nuxt/#"
+Header always set Pragma "no-cache" "expr=%{REQUEST_URI} =~ m#^/_nuxt/#"
+Header always set Expires "0" "expr=%{REQUEST_URI} =~ m#^/_nuxt/#"
+
 # Handle client-side routing
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
