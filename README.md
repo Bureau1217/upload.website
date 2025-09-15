@@ -73,6 +73,3 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
-# Trigger deployment
-# Test SSH deployment Ven 12 sep 2025 18:33:49 CEST
-# Test FTP deployment Ven 12 sep 2025 19:27:56 CEST
