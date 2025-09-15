@@ -43,15 +43,8 @@ jobs:
           ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com:/srv/customer/sites/upload-biennale.ch/
         echo "Deployment completed successfully!"
 
-    - name: Test SSH connection
-      env:
-        SSHPASS: ${{ secrets.SSH_PASSWORD }}
-      run: |
-        sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com "echo 'SSH connection successful'"
-
-    - name: Install dependencies on server
-      env:
-        SSHPASS: ${{ secrets.SSH_PASSWORD }}
-      run: |
-        sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com \
-          "cd /srv/customer/sites/upload-biennale.ch/ && ls -la && which node && which npm"
+        echo "Files deployed successfully. Manual steps required:"
+        echo "1. SSH into server: ssh ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com"
+        echo "2. cd /srv/customer/sites/upload-biennale.ch/"
+        echo "3. npm ci --production"
+        echo "4. node .output/server/index.mjs"
