@@ -17,7 +17,7 @@
 
     <template v-else-if="status === 'error'">
       <div class="error">
-        Erreur de chargement du contenu
+        Erreur de chargement
       </div>
     </template>
 
