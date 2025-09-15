@@ -2,10 +2,7 @@
 export default defineNuxtConfig({
   ssr: true,
   nitro: {
-    preset: 'static',
-    prerender: {
-      crawlLinks: true
-    },
+    preset: 'node-server',
     inlineDynamicImports: true
   },
   app: {

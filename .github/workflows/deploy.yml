@@ -22,8 +22,8 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Build static site
-      run: npm run construction
+    - name: Build application
+      run: npm run build
 
     - name: Install sshpass and rsync
       run: sudo apt-get update && sudo apt-get install -y sshpass rsync
@@ -34,7 +34,28 @@ jobs:
       run: |
         echo "Starting deployment..."
         rsync -avz --delete --stats --timeout=30 \
+          --exclude='.git*' \
+          --exclude='.DS_Store' \
+          --exclude='node_modules' \
+          --exclude='*.log' \
           -e "sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=10" \
-          .output/public/ \
+          ./ \
           ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com:/srv/customer/sites/upload-biennale.ch/
         echo "Deployment completed successfully!"
+
+    - name: Install dependencies and start app on server
+      env:
+        SSHPASS: ${{ secrets.SSH_PASSWORD }}
+      run: |
+        sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com << 'EOF'
+        cd /srv/customer/sites/upload-biennale.ch/
+        npm ci --production
+
+        # Arrêter l'ancien processus PM2 s'il existe
+        pm2 delete upload-biennale || true
+
+        # Démarrer la nouvelle application
+        pm2 start .output/server/index.mjs --name "upload-biennale" --port 3000
+        pm2 save
+        EOF
+        echo "Application started successfully!"
