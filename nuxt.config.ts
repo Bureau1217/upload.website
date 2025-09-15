@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   ssr: true,
   nitro: {
     preset: 'node-server',
+    port: 3001,
     inlineDynamicImports: true
   },
   app: {
