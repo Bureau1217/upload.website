@@ -84,16 +84,16 @@ const resetNav = (linkIndex: number, link: HTMLElement) => {
 
 const updateActiveStates = () => {
   if (!navLinks) return
-  
+
   navLinks.forEach((link, index) => {
     if (link.classList.contains('router-link-active')) {
       // Lien actif : appliquer l'effet
       distortNav(index, true)
     } else {
-      // Lien inactif : remettre normal
+      // Lien inactif : remettre normal (forcer le reset)
       if (navChars[index]) {
         navChars[index].forEach((char) => {
-          char.style.transform = 'translateY(0px) rotate(0deg)'
+          char.style.transform = 'translateY(0px)'
           char.style.transition = 'transform 0.3s ease'
         })
       }
@@ -150,9 +150,12 @@ onMounted(() => {
     
     // Surveiller les changements de route pour mettre à jour les états actifs
     watch(() => route.path, () => {
-      nextTick(() => {
-        updateActiveStates()
-      })
+      // Attendre que Nuxt mette à jour les classes router-link-active
+      setTimeout(() => {
+        nextTick(() => {
+          updateActiveStates()
+        })
+      }, 50)
     }, { immediate: false })
   })
 })

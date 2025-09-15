@@ -22,7 +22,7 @@
     </template>
 
     <template v-else>
-      <div class="loading">Chargement... [Test déploiement automatique]</div>
+      <div class="loading">Chargement...</div>
     </template>
   </main>
 </template>
