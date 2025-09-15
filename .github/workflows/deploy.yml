@@ -43,19 +43,16 @@ jobs:
           ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com:/srv/customer/sites/upload-biennale.ch/
         echo "Deployment completed successfully!"
 
-    - name: Install dependencies and start app on server
+    - name: Install dependencies on server
       env:
         SSHPASS: ${{ secrets.SSH_PASSWORD }}
       run: |
-        sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com << 'EOF'
-        cd /srv/customer/sites/upload-biennale.ch/
-        npm ci --production
+        sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com \
+          "cd /srv/customer/sites/upload-biennale.ch/ && npm ci --production"
 
-        # Arrêter l'ancien processus PM2 s'il existe
-        pm2 delete upload-biennale || true
-
-        # Démarrer la nouvelle application
-        pm2 start .output/server/index.mjs --name "upload-biennale" --port 3000
-        pm2 save
-        EOF
-        echo "Application started successfully!"
+    - name: Start Node.js application
+      env:
+        SSHPASS: ${{ secrets.SSH_PASSWORD }}
+      run: |
+        sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com \
+          "cd /srv/customer/sites/upload-biennale.ch/ && pkill -f 'node.*upload-biennale' || true && nohup node .output/server/index.mjs > app.log 2>&1 & echo 'Application started'"
