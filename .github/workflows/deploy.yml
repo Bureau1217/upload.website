@@ -36,5 +36,5 @@ jobs:
         rsync -avz --delete --stats --timeout=30 \
           -e "sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=10" \
           .output/public/ \
-          ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com:/sites/upload-biennale.ch/
+          ${{ secrets.SSH_USERNAME }}@57-102620.ssh.hosting-ik.com:/srv/customer/sites/upload-biennale.ch/
         echo "Deployment completed successfully!"
