@@ -40,11 +40,11 @@ jobs:
           --exclude='*.log' \
           -e "sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -o ServerAliveInterval=10" \
           ./ \
-          ${{ secrets.SSH_USERNAME }}@57-102981.ssh.hosting-ik.com:/srv/customer/sites/upload-biennale.ch/
+          ${{ secrets.SSH_USERNAME }}@57-102988.ssh.hosting-ik.com:/srv/customer/sites/upload-biennale.ch/
         echo "Deployment completed successfully!"
 
         echo "Files deployed successfully. Manual steps required:"
-        echo "1. SSH into server: ssh ${{ secrets.SSH_USERNAME }}@57-102981.ssh.hosting-ik.com"
+        echo "1. SSH into server: ssh ${{ secrets.SSH_USERNAME }}@57-102988.ssh.hosting-ik.com"
         echo "2. cd /srv/customer/sites/upload-biennale.ch/"
         echo "3. npm ci --production"
         echo "4. node .output/server/index.mjs"
