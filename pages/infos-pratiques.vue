@@ -65,7 +65,7 @@
               class="logo-item"
             >
               <img 
-                :src="`http://localhost:8000${logo.url}`" 
+                :src="getCmsImageUrl(logo.url)" 
                 :alt="logo.alt || 'Logo partenaire'" 
                 :width="logo.width"
                 :height="logo.height"
@@ -90,6 +90,9 @@
 
 <script setup lang="ts">
 import type { InfosPratiquesData, CMSFetchData } from '~/composables/cms_api'
+
+// Utiliser le composable pour les images CMS
+const { getCmsImageUrl } = useCmsImage()
 
 const { data, status } = await useFetch<CMSFetchData<InfosPratiquesData>>('/api/CMS_KQLRequest', {
   lazy: true,

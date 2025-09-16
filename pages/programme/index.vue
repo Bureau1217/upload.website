@@ -118,8 +118,11 @@ const { data, status, error } = await useFetch<CMSFetchData<CMSProgrammeData>>('
 const evenements = computed(() => data.value?.result?.children ?? [])
 const programmePdfs = computed(() => data.value?.result?.programme_pdf ?? [])
 
+// Utiliser le composable pour les images CMS
+const { getCmsImageUrl } = useCmsImage()
+
 const getFileUrl = (url: string) => {
-  return 'http://localhost:8000' + url
+  return getCmsImageUrl(url)
 }
 
 // État des filtres

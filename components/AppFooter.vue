@@ -31,7 +31,7 @@
           <img 
             v-for="logo in partnerLogos"
             :key="logo.url"
-            :src="`http://localhost:8000${logo.url}`"
+            :src="getCmsImageUrl(logo.url)"
             :alt="logo.alt || 'Partner logo'"
             class="footer__partner-logo"
             @error="(e) => console.log('Logo failed to load:', logo.url, e)"
@@ -50,6 +50,8 @@
 
 <script setup lang="ts">
 import type { FooterData, CMSFetchData } from '~/composables/cms_api'
+
+const { getCmsImageUrl } = useCmsImage()
 
 // Essaie d'abord la page footer, puis fallback vers infos-pratiques
 const { data: footerResponse } = await useFetch<CMSFetchData<FooterData>>('/api/CMS_KQLRequest', {
@@ -164,7 +166,7 @@ const getSocialIcon = (social: any) => {
   console.log('Social item:', social) // Debug
   // Si on a une icône SVG depuis le CMS
   if (social.icon?.url) {
-    return `<img src="http://localhost:8000${social.icon.url}" alt="${social.icon.alt || 'Social icon'}" class="social-svg" />`
+    return `<img src="${getCmsImageUrl(social.icon.url)}" alt="${social.icon.alt || 'Social icon'}" class="social-svg" />`
   }
   // Fallback avec émoji basé sur l'URL
   if (social.url?.includes('instagram')) {

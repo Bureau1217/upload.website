@@ -4,7 +4,7 @@
       <img 
         v-for="image in images" 
         :key="image.url" 
-        :src="'http://localhost:8000' + image.url" 
+        :src="getCmsImageUrl(image.url)" 
         :alt="image.alt || `Image de ${exposantName}`" 
         class="exposant-image"
       />
@@ -26,6 +26,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Utiliser le composable pour les images CMS
+const { getCmsImageUrl } = useCmsImage()
 </script>
 
 <style lang="scss" scoped>

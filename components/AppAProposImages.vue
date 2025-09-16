@@ -34,11 +34,10 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const { getCmsImageUrl } = useCmsImage()
+
 const getImageUrl = (image: ImageData) => {
-  if (image.url.startsWith('http')) {
-    return image.url
-  }
-  return `http://localhost:8000${image.url}`
+  return getCmsImageUrl(image.url)
 }
 </script>
 

@@ -27,7 +27,7 @@
           <!-- Colonne droite : Image biennale -->
           <div class="content-image-column">
             <div v-if="data.result.biennale_image" class="image-container">
-              <img :src="'http://localhost:8000' + data.result.biennale_image" 
+              <img :src="getCmsImageUrl(data.result.biennale_image)" 
                    alt="Image de la biennale" 
                    class="full-image" />
             </div>
@@ -53,7 +53,7 @@
               <img 
                 v-for="logo in data.result.partners_logos" 
                 :key="logo.url"
-                :src="'http://localhost:8000' + logo.url" 
+                :src="getCmsImageUrl(logo.url)" 
                 :alt="logo.alt || 'Logo partenaire'" 
                 class="partner-logo" 
               />
@@ -79,6 +79,9 @@
 
 <script setup lang="ts">
 import type { AproposData, CMSFetchData } from '~/composables/cms_api'
+
+// Utiliser le composable pour les images CMS
+const { getCmsImageUrl } = useCmsImage()
 
 const { data, status } = await useFetch<CMSFetchData<AproposData>>('/api/CMS_KQLRequest', {
   lazy: true,

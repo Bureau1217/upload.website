@@ -2,7 +2,7 @@
   <div class="event-image">
     <div v-if="image?.url" class="image-container">
       <img 
-        :src="'http://localhost:8000' + image.url"
+        :src="getCmsImageUrl(image.url)"
         :alt="image.alt || eventName"
         :width="image.width"
         :height="image.height"
@@ -40,6 +40,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { getCmsImageUrl } = useCmsImage()
 </script>
 
 <style lang="scss" scoped>

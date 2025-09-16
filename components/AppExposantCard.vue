@@ -5,7 +5,7 @@
       <div class="image-container">
         <img 
           v-if="exposant.info_image?.length && exposant.info_image[0]"
-          :src="'http://localhost:8000' + exposant.info_image[0].url" 
+          :src="getCmsImageUrl(exposant.info_image[0].url)" 
           :alt="exposant.info_image[0].alt || exposant.title" 
           class="exposant-image" 
         />
@@ -40,6 +40,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+// Utiliser le composable pour les images CMS
+const { getCmsImageUrl } = useCmsImage()
 
 const getCategoryLabel = (category: string) => {
   const labels: Record<string, string> = {

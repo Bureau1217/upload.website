@@ -115,9 +115,10 @@ const displayTime = computed(() => {
     : formatTime(props.event.start_time)
 })
 
+const { getCmsImageUrl } = useCmsImage()
+
 const getImageUrl = (url: string) => {
-  // Simple URL sans cache-busting constant - le refresh de la page suffira
-  return 'http://localhost:8000' + url
+  return getCmsImageUrl(url)
 }
 
 // Nettoyer le scroll au démontage du composant
