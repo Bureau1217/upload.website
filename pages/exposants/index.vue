@@ -1,9 +1,13 @@
 <template>
-  <main class="v-exposants">
+  <!-- Loader initial intelligent -->
+  <AppLoadingState v-if="isInitialLoading" type="loading" />
+
+  <!-- Contenu de la page -->
+  <main v-else class="v-exposants">
     <template v-if="data && data.status === 'ok'">
       <section class="section">
         <h1 class="section-title">Graphistes</h1>
-      
+
       <!-- Liste des exposants -->
       <AppExposantsList v-if="exposantsAlphabetiques.length" :exposants="exposantsAlphabetiques" />
 
@@ -25,6 +29,7 @@
 
 <script setup lang="ts">
 import type { ExposantData, CMSListData } from '~/composables/cms_api'
+
 const { data, status } = await useFetch<CMSListData<ExposantData>>('/api/CMS_KQLRequest', {
   lazy: true,
   method: 'POST',
@@ -36,17 +41,18 @@ const { data, status } = await useFetch<CMSListData<ExposantData>>('/api/CMS_KQL
       content_subtitle: true,
       info_category: true,
       info_image: {
-        query: 'page.info_image.toFiles',
+        query: 'page.info_image.toFiles.first',
         select: {
-          url: true,
-          alt: true,
-          width: true,
-          height: true
+          alt: "file.alt.value",
+          small: "file.resize(400)"
         }
       }
     }
   }
 })
+
+// Loader intelligent qui attend les données
+const { isInitialLoading } = usePageLoading(3000, data)
 
 // Trier les exposants par ordre alphabétique
 const exposantsAlphabetiques = computed(() => {

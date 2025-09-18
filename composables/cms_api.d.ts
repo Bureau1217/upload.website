@@ -25,12 +25,7 @@ export type ExposantData = {
   info_bio_studio: string
   info_link_website: string
   info_link_social: string
-  info_image: Array<{
-    url: string
-    alt: string
-    width: number
-    height: number
-  }>
+  info_image: import('~/types/cms').CMS_API_ImageObject | import('~/types/cms').CMS_API_PartialImageObject | import('~/types/cms').CMS_API_PartialImageObject[] | import('~/types/cms').CMS_API_SimpleImage
 }
 
 export type EventData = {

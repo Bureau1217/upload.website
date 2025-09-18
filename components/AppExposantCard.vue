@@ -1,13 +1,17 @@
-<template>
+h<template>
   <article class="exposant-card">
     <NuxtLink :to="`/exposants/${exposant.slug}`" class="card-link">
       <!-- Image avec overlay hover -->
       <div class="image-container">
-        <img 
-          v-if="exposant.info_image?.length && exposant.info_image[0]"
-          :src="getCmsImageUrl(exposant.info_image[0].url)" 
-          :alt="exposant.info_image[0].alt || exposant.title" 
-          class="exposant-image" 
+        <img
+          v-if="exposant.info_image && imageUrl"
+          :src="imageUrl"
+          :alt="exposant.info_image?.alt || exposant.title"
+          class="exposant-image"
+          loading="lazy"
+          decoding="async"
+          @load="onImageLoad"
+          @error="onImageError"
         />
         <div v-else class="image-placeholder">
           Pas d'image
@@ -43,6 +47,32 @@ const props = defineProps<Props>()
 
 // Utiliser le composable pour les images CMS
 const { getCmsImageUrl } = useCmsImage()
+
+// Image avec cache plus agressif
+const imageUrl = computed(() => {
+  const image = props.exposant?.info_image
+  if (!image) return ''
+
+  // Nouveau format simple avec URL directe
+  if ('url' in image && typeof image.url === 'string') {
+    return getCmsImageUrl(image.url)
+  }
+
+  // Ancien format avec tailles multiples
+  if ('small' in image && image.small?.url) {
+    return getCmsImageUrl(image.small.url)
+  }
+
+  return ''
+})
+
+const onImageLoad = () => {
+  // Marquer l'image comme chargée pour le cache
+}
+
+const onImageError = () => {
+  console.warn('Erreur de chargement image:', props.exposant.title)
+}
 
 const getCategoryLabel = (category: string) => {
   const labels: Record<string, string> = {
@@ -88,7 +118,18 @@ const getCategoryLabel = (category: string) => {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.3s ease;
+  transition: transform 0.15s ease-out;
+  background-color: var(--color-gray);
+
+  /* Améliorer le rendu pendant le chargement */
+  &:not([src]) {
+    opacity: 0;
+  }
+
+  &[src] {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out, transform 0.15s ease-out;
+  }
 }
 
 .image-placeholder {
@@ -114,7 +155,7 @@ const getCategoryLabel = (category: string) => {
   align-items: flex-start; /* Alignement en haut */
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.15s ease-out;
   padding: 1rem;
   box-sizing: border-box;
 }

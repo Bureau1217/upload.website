@@ -11,9 +11,9 @@
         
         <!-- Colonne de droite : Images -->
         <div class="exposant-image-column">
-          <AppExposantImages 
-            :images="exposant.info_image || []" 
-            :exposant-name="exposant.title" 
+          <AppExposantImages
+            :images="Array.isArray(exposant.info_image) ? exposant.info_image : (exposant.info_image ? [exposant.info_image] : [])"
+            :exposant-name="exposant.title"
           />
         </div>
       </div>
@@ -55,12 +55,10 @@ const { data } = await useFetch<CMSFetchData<ExposantData>>('/api/CMS_KQLRequest
       info_link_website: true,
       info_link_social: true,
       info_image: {
-        query: 'page.info_image.toFiles',
+        query: 'page.info_image.toFiles.first',
         select: {
-          url: true,
-          alt: true,
-          width: true,
-          height: true
+          alt: "file.alt.value",
+          reg: "file.resize(800)"
         }
       }
     }
@@ -79,12 +77,10 @@ const { data: allExposantsData } = await useFetch<CMSListData<ExposantData>>('/a
       content_subtitle: true,
       info_category: true,
       info_image: {
-        query: 'page.info_image.toFiles',
+        query: 'page.info_image.toFiles.first',
         select: {
-          url: true,
-          alt: true,
-          width: true,
-          height: true
+          alt: "file.alt.value",
+          small: "file.resize(400)"
         }
       }
     }

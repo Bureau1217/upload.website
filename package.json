@@ -12,6 +12,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@nuxt/image": "^1.11.0",
     "@types/p5": "^1.7.6",
     "nuxt": "^4.0.3",
     "p5": "^2.0.5",

@@ -5,13 +5,42 @@ export interface CMS_API_Response {
   message?: string
 }
 
-export interface CMS_API_File {
-  alt: string
-  tiny: string
-  small: string
-  reg: string
-  large: string
-  xxl: string
+export interface CMS_API_Image {
+  extension: string
+  filename: string
+  height: number
+  id: string
+  mime: string
+  niceSize: string
+  template: string
+  type: "image"
+  url: string
+  width: number
+}
+
+export interface CMS_API_ImageObject {
+  alt: string | null
+  tiny: CMS_API_Image
+  small: CMS_API_Image
+  reg: CMS_API_Image
+  large: CMS_API_Image
+  xxl: CMS_API_Image
+}
+
+export interface CMS_API_PartialImageObject {
+  alt: string | null
+  tiny?: CMS_API_Image
+  small?: CMS_API_Image
+  reg?: CMS_API_Image
+  large?: CMS_API_Image
+  xxl?: CMS_API_Image
+}
+
+export interface CMS_API_SimpleImage {
+  alt: string | null
+  url: string
+  width: number
+  height: number
 }
 
 export interface CMS_API_Evenement {
@@ -34,7 +63,7 @@ export interface CMS_API_Participant {
   info_bio_studio: string
   info_link_website: string
   info_link_social: string
-  info_image: CMS_API_File[]
+  info_image: CMS_API_ImageObject[]
 }
 
 export interface CMS_API_Home {

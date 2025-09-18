@@ -1,8 +1,12 @@
 <template>
-  <main class="v-home">
+  <!-- Loader initial plein écran -->
+  <AppLoadingState v-if="isInitialLoading" type="loading" />
+
+  <!-- Contenu de la page -->
+  <main v-else class="v-home">
     <!-- Hero avec animation p5 -->
     <AppHero />
-    
+
     <template v-if="data && data.status === 'ok'">
       <!-- Ligne de séparation -->
       <div class="section-separator"></div>
@@ -28,6 +32,9 @@
 <script setup lang="ts">
 import type { HomeData, ExposantData, CMSFetchData, CMSListData } from '~/composables/cms_api'
 
+// Loader court pour l'animation
+const { isInitialLoading } = usePageLoading(1500) // 1.5 seconde pour l'animation
+
 const { data, status } = await useFetch<CMSFetchData<HomeData>>('/api/CMS_KQLRequest', {
   lazy: true,
   method: 'POST',
@@ -51,17 +58,16 @@ const { data: exposantsData } = await useFetch<CMSListData<ExposantData>>('/api/
       slug: true,
       content_subtitle: true,
       info_image: {
-        query: 'page.info_image.toFiles',
+        query: 'page.info_image.toFiles.first',
         select: {
-          url: true,
-          alt: true,
-          width: true,
-          height: true
+          alt: "file.alt.value",
+          small: "file.resize(400)"
         }
       }
     }
   }
 })
+
 </script>
 
 <style lang="scss" scoped>

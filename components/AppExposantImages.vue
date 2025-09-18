@@ -1,34 +1,78 @@
 <template>
   <div v-if="images?.length" class="exposant-images">
     <div class="images-gallery">
-      <img 
-        v-for="image in images" 
-        :key="image.url" 
-        :src="getCmsImageUrl(image.url)" 
-        :alt="image.alt || `Image de ${exposantName}`" 
+      <img
+        v-for="image in images"
+        :key="getImageUrl(image)"
+        :src="getCmsImageUrl(getImageUrl(image))"
+        :alt="image.alt || `Image de ${exposantName}`"
         class="exposant-image"
+        loading="lazy"
+        decoding="async"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-interface ImageData {
-  url: string
-  alt: string
-  width: number
-  height: number
-}
+import type { CMS_API_ImageObject } from '~/types/cms'
 
 interface Props {
-  images: ImageData[]
+  images: CMS_API_ImageObject[]
   exposantName: string
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 // Utiliser le composable pour les images CMS
 const { getCmsImageUrl } = useCmsImage()
+
+// Fonctions helpers pour gérer les différents formats d'images
+const getImageUrl = (image: any): string => {
+  if (!image) return ''
+
+  // Format avec tailles multiples - utiliser 'reg' ou 'small'
+  if ('reg' in image && image.reg?.url) {
+    return image.reg.url
+  }
+
+  if ('small' in image && image.small?.url) {
+    return image.small.url
+  }
+
+  // Format simple avec URL directe (fallback)
+  if ('url' in image && typeof image.url === 'string') {
+    return image.url
+  }
+
+  return ''
+}
+
+const getImageWidth = (image: any): number | undefined => {
+  if ('width' in image && typeof image.width === 'number') {
+    return image.width
+  }
+  if ('reg' in image && image.reg?.width) {
+    return image.reg.width
+  }
+  if ('small' in image && image.small?.width) {
+    return image.small.width
+  }
+  return undefined
+}
+
+const getImageHeight = (image: any): number | undefined => {
+  if ('height' in image && typeof image.height === 'number') {
+    return image.height
+  }
+  if ('reg' in image && image.reg?.height) {
+    return image.reg.height
+  }
+  if ('small' in image && image.small?.height) {
+    return image.small.height
+  }
+  return undefined
+}
 </script>
 
 <style lang="scss" scoped>
