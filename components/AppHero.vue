@@ -86,7 +86,12 @@ onMounted(async () => {
       biennaleCanvas.id('biennale-canvas')
       biennaleCanvas.parent('biennale-container')
       biennaleCanvas.style('display', 'block')
-      biennaleCanvas.style('touch-action', 'none')
+
+   if (isTouchDevice()) {
+  biennaleCanvas.style('touch-action', 'pan-y')  // autorise le scroll vertical
+} else {
+  biennaleCanvas.style('touch-action', 'none')
+}
 
       p.textFont(animFont)
       imgOffset = p.floor(p.random(imgs.length))
@@ -333,9 +338,24 @@ onMounted(async () => {
 
     p.touchMoved = () => {
       // Désactiver complètement l'interaction touch sur mobile
-      if (isMobileAutoMode) {
-        return false
-      }
+p.touchMoved = () => {
+  // Sur mobile en mode auto, on ne bloque pas le scroll
+  if (isMobileAutoMode) {
+    return; // surtout pas "false"
+  }
+
+  if (p.touches.length > 0) {
+    lastMouseMoveTime = p.millis()
+    if (isIdleMode) isIdleMode = false
+
+    const last = points[points.length - 1]
+    const tx = p.touches[0].x, ty = p.touches[0].y
+    if (!last || p.dist(tx, ty, last.x, last.y) >= scaledLetterSpacing) {
+      addPoint(tx, ty)
+    }
+  }
+  // ne rien retourner (ou "return;")
+}
       
       if (p.touches.length > 0) {
         lastMouseMoveTime = p.millis()
