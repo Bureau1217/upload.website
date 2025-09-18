@@ -59,14 +59,14 @@ const closeMobileMenu = () => {
 
 const distortNav = (linkIndex: number, isActive = false) => {
   if (!navChars[linkIndex] || navChars[linkIndex].length === 0) return
-  
+
   navChars[linkIndex].forEach((char) => {
     if (char.classList.contains('space')) return
-    
+
     const randomY = (Math.random() * 20 - 10).toFixed(1) // Mouvement vertical seulement
-    
+
     char.style.transform = `translateY(${randomY}px)`
-    char.style.transition = isActive ? 'transform 0.1s ease' : 'transform 0.2s ease'
+    char.style.transition = isActive ? 'transform 0.6s ease-out' : 'transform 0.3s ease-out'
   })
 }
 
@@ -77,27 +77,33 @@ const resetNav = (linkIndex: number, link: HTMLElement, force = false) => {
   if (!force && link.classList.contains('router-link-active')) return
 
   navChars[linkIndex].forEach((char) => {
-    char.style.transform = 'translateY(0px) rotate(0deg)'
-    char.style.transition = 'transform 0.3s ease'
+    // Transition plus douce pour le reset
+    char.style.transition = 'transform 0.4s ease-out'
+    char.style.transform = 'translateY(0px)'
   })
 }
 
 const updateActiveStates = () => {
   if (!navLinks) return
 
-  // D'abord, forcer le reset de tous les liens (même les actifs)
-  navLinks.forEach((link, index) => {
-    resetNav(index, link, true) // force = true pour reset même les liens actifs
-  })
-
-  // Ensuite, appliquer l'effet au lien actif après un petit délai
-  setTimeout(() => {
-    navLinks?.forEach((link, index) => {
-      if (link.classList.contains('router-link-active')) {
-        distortNav(index, true)
-      }
+  // Attendre que Vue ait mis à jour les classes CSS
+  nextTick(() => {
+    // D'abord, forcer le reset de tous les liens (même les actifs)
+    navLinks.forEach((link, index) => {
+      resetNav(index, link, true) // force = true pour reset même les liens actifs
     })
-  }, 50) // Petit délai pour que le reset soit visible avant la nouvelle animation
+
+    // Ensuite, appliquer l'effet au lien actif après un délai plus long
+    setTimeout(() => {
+      if (navLinks) {
+        navLinks.forEach((link, index) => {
+          if (link.classList.contains('router-link-active')) {
+            distortNav(index, true)
+          }
+        })
+      }
+    }, 200) // Délai augmenté pour une transition plus douce
+  })
 }
 
 onMounted(() => {
@@ -163,10 +169,8 @@ onMounted(() => {
 
       // Puis attendre que Nuxt mette à jour les classes router-link-active
       setTimeout(() => {
-        nextTick(() => {
-          updateActiveStates()
-        })
-      }, 150) // Augmenté à 150ms pour être sûr
+        updateActiveStates()
+      }, 300) // Délai plus long pour une transition plus naturelle
     }, { immediate: true })
   })
 })
@@ -250,19 +254,19 @@ onUnmounted(() => {
   :deep(.nav-char) {
     display: inline-block;
     position: relative;
-    transition: transform 0.3s ease;
+    transition: transform 0.4s ease-out;
     margin-right: 0.05em; /* Petit espacement entre les lettres */
     font-family: 'Helvetica', Arial, sans-serif;
     font-weight: bold;
     font-size: clamp(1.3rem, 5vw, 1.2rem);
     line-height: 1.3;
     color: black;
-    
+
     &.space {
       width: 0.3em;
       margin-right: 0;
     }
-    
+
     &:last-child {
       margin-right: 0;
     }
