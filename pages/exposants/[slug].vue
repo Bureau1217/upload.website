@@ -27,15 +27,14 @@
     </template>
 
     <template v-else-if="status === 'error' || !exposant">
-      <div class="error">
-        <h1>Exposant introuvable</h1>
-        <p>Cet exposant n'existe pas ou n'est pas disponible.</p>
+      <AppLoadingState type="error" title="Exposant introuvable" message="Cet exposant n'existe pas ou n'est pas disponible." />
+      <div style="text-align: center; margin-top: 1rem;">
         <NuxtLink to="/exposants">← Retour aux exposants</NuxtLink>
       </div>
     </template>
 
     <template v-else>
-      <div class="loading">Chargement...</div>
+      <AppLoadingState type="loading" />
     </template>
   </main>
 </template>

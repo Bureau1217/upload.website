@@ -43,21 +43,15 @@
       </template>
 
       <template v-else-if="status === 'error'">
-        <div class="error">
-          <h2>Erreur de chargement</h2>
-          <p>Impossible de charger le programme.</p>
-        </div>
+        <AppLoadingState type="error" title="Erreur de chargement" message="Impossible de charger le programme." />
       </template>
 
-      <template v-else-if="evenements?.length === 0">
-        <div class="empty">
-          <h2>Aucun événement</h2>
-          <p>Le programme n'est pas encore disponible.</p>
-        </div>
+      <template v-else-if="status === 'success' && evenements?.length === 0">
+        <AppLoadingState type="empty" title="Aucun événement" message="Le programme n'est pas encore disponible." />
       </template>
 
       <template v-else>
-        <div class="loading">Chargement du programme...</div>
+        <AppLoadingState type="loading" />
       </template>
     </section>
   </main>

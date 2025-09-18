@@ -25,15 +25,14 @@
     </template>
 
     <template v-else-if="status === 'error' || !evenement">
-      <div class="error">
-        <h1>Événement introuvable</h1>
-        <p>Cet événement n'existe pas ou n'est pas disponible.</p>
+      <AppLoadingState type="error" title="Événement introuvable" message="Cet événement n'existe pas ou n'est pas disponible." />
+      <div style="text-align: center; margin-top: 1rem;">
         <NuxtLink to="/programme">← Retour au programme</NuxtLink>
       </div>
     </template>
 
     <template v-else>
-      <div class="loading">Chargement...</div>
+      <AppLoadingState type="loading" />
     </template>
   </main>
 </template>

@@ -41,8 +41,8 @@
 
       <!-- Crédits design + dev -->
       <div class="footer__credits-section">
-        <h4 class="footer__credit-design" v-if="creditDesign" v-html="creditDesign"></h4>
-        <h4 class="footer__credit-dev" v-if="creditDev" v-html="creditDev"></h4>
+        <h4 class="footer__credit-design" v-if="creditDesign" v-html="parseKirbyText(creditDesign)"></h4>
+        <h4 class="footer__credit-dev" v-if="creditDev" v-html="parseKirbyText(creditDev)"></h4>
       </div>
     </div>
   </footer>
@@ -180,6 +180,13 @@ const getSocialIcon = (social: any) => {
   if (social.url?.includes('tiktok')) return '🎵'
   // Fallback général
   return '🌐'
+}
+
+const parseKirbyText = (text: string) => {
+  if (!text) return text
+
+  // Parse les liens KirbyText: (link: URL text: TEXTE)
+  return text.replace(/\(link:\s*([^\s]+)\s+text:\s*([^)]+)\)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$2</a>')
 }
 </script>
 

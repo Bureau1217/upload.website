@@ -68,11 +68,11 @@
     </template>
 
     <template v-else-if="status === 'error'">
-      <div class="error">Erreur de chargement de la page À propos</div>
+      <AppLoadingState type="error" message="Erreur de chargement de la page À propos" />
     </template>
 
     <template v-else>
-      <div class="loading">Chargement...</div>
+      <AppLoadingState type="loading" />
     </template>
   </main>
 </template>

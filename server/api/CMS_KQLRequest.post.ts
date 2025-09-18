@@ -3,6 +3,7 @@ export default defineEventHandler(async (event) => {
 
   // Configuration Kirby
   const KIRBY_URL = process.env.KIRBY_URL || 'https://cms.upload-biennale.ch'
+  //const KIRBY_URL = process.env.KIRBY_URL || 'http://localhost:8000'
   const KIRBY_USERNAME = process.env.API_AUTH_EMAIL || 'admin'
   const KIRBY_PASSWORD = process.env.API_AUTH_PASSWORD || 'password'
 
