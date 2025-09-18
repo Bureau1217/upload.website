@@ -70,12 +70,12 @@ const distortNav = (linkIndex: number, isActive = false) => {
   })
 }
 
-const resetNav = (linkIndex: number, link: HTMLElement) => {
+const resetNav = (linkIndex: number, link: HTMLElement, force = false) => {
   if (!navChars[linkIndex] || navChars[linkIndex].length === 0) return
-  
-  // Ne pas remettre en place si le lien est actif
-  if (link.classList.contains('router-link-active')) return
-  
+
+  // Ne pas remettre en place si le lien est actif (sauf si forcé)
+  if (!force && link.classList.contains('router-link-active')) return
+
   navChars[linkIndex].forEach((char) => {
     char.style.transform = 'translateY(0px) rotate(0deg)'
     char.style.transition = 'transform 0.3s ease'
@@ -85,18 +85,20 @@ const resetNav = (linkIndex: number, link: HTMLElement) => {
 const updateActiveStates = () => {
   if (!navLinks) return
 
+  // D'abord, reset tous les liens
+  navLinks.forEach((link, index) => {
+    if (navChars[index]) {
+      navChars[index].forEach((char) => {
+        char.style.transform = 'translateY(0px)'
+        char.style.transition = 'transform 0.3s ease'
+      })
+    }
+  })
+
+  // Ensuite, appliquer l'effet au lien actif
   navLinks.forEach((link, index) => {
     if (link.classList.contains('router-link-active')) {
-      // Lien actif : appliquer l'effet
       distortNav(index, true)
-    } else {
-      // Lien inactif : remettre normal (forcer le reset)
-      if (navChars[index]) {
-        navChars[index].forEach((char) => {
-          char.style.transform = 'translateY(0px)'
-          char.style.transition = 'transform 0.3s ease'
-        })
-      }
     }
   })
 }
@@ -147,7 +149,12 @@ onMounted(() => {
         distortNav(index, true)
       }
     })
-    
+
+    // Appel initial pour s'assurer que l'état est correct
+    setTimeout(() => {
+      updateActiveStates()
+    }, 50)
+
     // Surveiller les changements de route pour mettre à jour les états actifs
     watch(() => route.path, () => {
       // Attendre que Nuxt mette à jour les classes router-link-active
@@ -155,8 +162,8 @@ onMounted(() => {
         nextTick(() => {
           updateActiveStates()
         })
-      }, 50)
-    }, { immediate: false })
+      }, 100)
+    }, { immediate: true })
   })
 })
 
