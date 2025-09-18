@@ -2,19 +2,19 @@
   <main class="v-exposants">
     <template v-if="data && data.status === 'ok'">
       <section class="section">
-        <h1 class="section-title">Exposants</h1>
+        <h1 class="section-title">Graphistes</h1>
       
       <!-- Liste des exposants -->
-      <AppExposantsList v-if="exposantsAleatoires.length" :exposants="exposantsAleatoires" />
+      <AppExposantsList v-if="exposantsAlphabetiques.length" :exposants="exposantsAlphabetiques" />
 
         <div v-else>
-          <p>Aucun exposant pour le moment.</p>
+          <p>Aucun graphiste pour le moment.</p>
         </div>
       </section>
     </template>
 
     <template v-else-if="status === 'error'">
-      <AppLoadingState type="error" message="Erreur de chargement des exposants" />
+      <AppLoadingState type="error" message="Erreur de chargement des graphistes" />
     </template>
 
     <template v-else>
@@ -48,22 +48,10 @@ const { data, status } = await useFetch<CMSListData<ExposantData>>('/api/CMS_KQL
   }
 })
 
-// Fonction pour mélanger un array de manière aléatoire
-const shuffleArray = <T>(array: T[]): T[] => {
-  const shuffled = [...array]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    const temp = shuffled[i]!
-    shuffled[i] = shuffled[j]!
-    shuffled[j] = temp
-  }
-  return shuffled
-}
-
-// Mélanger les exposants de manière aléatoire
-const exposantsAleatoires = computed(() => {
+// Trier les exposants par ordre alphabétique
+const exposantsAlphabetiques = computed(() => {
   if (!data.value?.result) return []
-  return shuffleArray(data.value.result)
+  return [...data.value.result].sort((a, b) => a.title.localeCompare(b.title))
 })
 </script>
 

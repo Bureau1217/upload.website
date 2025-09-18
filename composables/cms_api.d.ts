@@ -39,6 +39,12 @@ export type EventData = {
   date: string
   start_time: string
   end_time?: string
+  dates?: Array<{
+    date: string
+    end_date?: string
+    start_time: string
+    end_time?: string
+  }>
   address: string
   googlemaps: string
   description: string
@@ -63,7 +69,7 @@ export type EventData = {
   meeting_point?: string
   guide_name?: string
   // Réservation
-  reservation_enabled?: boolean
+  reservation_enabled?: boolean | string
   reservation_url?: string
 }
 
@@ -119,6 +125,7 @@ export type CMSListData<T> = {
 export type CMSProgrammeData = {
   title: string
   slug: string
+  programme_schedule?: string
   children: EventData[]
   programme_pdf?: Array<{
     url: string

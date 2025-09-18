@@ -22,7 +22,7 @@
 
       <!-- Navigation (à droite) -->
       <nav class="main-navigation" :class="{ 'mobile-open': isMobileMenuOpen }">
-        <h3><NuxtLink to="/exposants" class="nav-link nav-wave" data-nav="0" @click="closeMobileMenu">Exposants</NuxtLink></h3>
+        <h3><NuxtLink to="/exposants" class="nav-link nav-wave" data-nav="0" @click="closeMobileMenu">Graphistes</NuxtLink></h3>
         <h3><NuxtLink to="/programme" class="nav-link nav-wave" data-nav="1" @click="closeMobileMenu">Programme</NuxtLink></h3>
         <h3><NuxtLink to="/apropos" class="nav-link nav-wave" data-nav="2" @click="closeMobileMenu">À propos</NuxtLink></h3>
         <h3><NuxtLink to="/infos-pratiques" class="nav-link nav-wave" data-nav="3" @click="closeMobileMenu">Infos pratiques</NuxtLink></h3>
@@ -85,22 +85,19 @@ const resetNav = (linkIndex: number, link: HTMLElement, force = false) => {
 const updateActiveStates = () => {
   if (!navLinks) return
 
-  // D'abord, reset tous les liens
+  // D'abord, forcer le reset de tous les liens (même les actifs)
   navLinks.forEach((link, index) => {
-    if (navChars[index]) {
-      navChars[index].forEach((char) => {
-        char.style.transform = 'translateY(0px)'
-        char.style.transition = 'transform 0.3s ease'
-      })
-    }
+    resetNav(index, link, true) // force = true pour reset même les liens actifs
   })
 
-  // Ensuite, appliquer l'effet au lien actif
-  navLinks.forEach((link, index) => {
-    if (link.classList.contains('router-link-active')) {
-      distortNav(index, true)
-    }
-  })
+  // Ensuite, appliquer l'effet au lien actif après un petit délai
+  setTimeout(() => {
+    navLinks?.forEach((link, index) => {
+      if (link.classList.contains('router-link-active')) {
+        distortNav(index, true)
+      }
+    })
+  }, 50) // Petit délai pour que le reset soit visible avant la nouvelle animation
 }
 
 onMounted(() => {
@@ -157,12 +154,19 @@ onMounted(() => {
 
     // Surveiller les changements de route pour mettre à jour les états actifs
     watch(() => route.path, () => {
-      // Attendre que Nuxt mette à jour les classes router-link-active
+      // Forcer un reset immédiat de tous les liens
+      if (navLinks) {
+        navLinks.forEach((link, index) => {
+          resetNav(index, link, true)
+        })
+      }
+
+      // Puis attendre que Nuxt mette à jour les classes router-link-active
       setTimeout(() => {
         nextTick(() => {
           updateActiveStates()
         })
-      }, 100)
+      }, 150) // Augmenté à 150ms pour être sûr
     }, { immediate: true })
   })
 })

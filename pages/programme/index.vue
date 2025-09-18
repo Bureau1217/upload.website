@@ -40,6 +40,9 @@
         <div v-if="filteredEvents.length === 0 && hasActiveFilters" class="no-results">
           <p>Aucun événement ne correspond aux filtres sélectionnés.</p>
         </div>
+
+        <!-- Planning détaillé -->
+        <AppPlanning :planning-content="planningSchedule" />
       </template>
 
       <template v-else-if="status === 'error'">
@@ -58,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import type { EventData, CMSProgrammeData, CMSFetchData } from '~/composables/cms_api'
+import type { CMSProgrammeData, CMSFetchData } from '~/composables/cms_api'
 
 const { data, status, error } = await useFetch<CMSFetchData<CMSProgrammeData>>('/api/CMS_KQLRequest', {
   lazy: true,
@@ -68,6 +71,7 @@ const { data, status, error } = await useFetch<CMSFetchData<CMSProgrammeData>>('
     select: {
       title: true,
       slug: true,
+      programme_schedule: true,
       programme_pdf: {
         query: 'page.programme_pdf.toFiles',
         select: {
@@ -84,6 +88,15 @@ const { data, status, error } = await useFetch<CMSFetchData<CMSProgrammeData>>('
           date: true,
           start_time: true,
           end_time: true,
+          dates: {
+            query: 'page.dates.toStructure',
+            select: {
+              date: true,
+              end_date: true,
+              start_time: true,
+              end_time: true
+            }
+          },
           address: true,
           googlemaps: true,
           description: true,
@@ -111,6 +124,7 @@ const { data, status, error } = await useFetch<CMSFetchData<CMSProgrammeData>>('
 
 const evenements = computed(() => data.value?.result?.children ?? [])
 const programmePdfs = computed(() => data.value?.result?.programme_pdf ?? [])
+const planningSchedule = computed(() => data.value?.result?.programme_schedule ?? '')
 
 // Utiliser le composable pour les images CMS
 const { getCmsImageUrl } = useCmsImage()
@@ -134,32 +148,45 @@ const filteredEvents = computed(() => {
   }
 
   if (filters.value.date) {
-    events = events.filter(event => event.date === filters.value.date)
+    events = events.filter(event => {
+      const eventDate = event.dates?.[0]?.date || event.date
+      return eventDate === filters.value.date
+    })
   }
+
+  // Helper pour récupérer les données de date
+  const getEventDate = (event: any) => event.dates?.[0]?.date || event.date
+  const getEventStartTime = (event: any) => event.dates?.[0]?.start_time || event.start_time
 
   // Trier par date et heure
   return events.sort((a, b) => {
-    if (!a.date && !b.date) return 0
-    if (!a.date) return 1
-    if (!b.date) return -1
-    
-    const dateA = new Date(a.date).getTime()
-    const dateB = new Date(b.date).getTime()
-    
+    const dateA = getEventDate(a)
+    const dateB = getEventDate(b)
+
+    if (!dateA && !dateB) return 0
+    if (!dateA) return 1
+    if (!dateB) return -1
+
+    const timestampA = new Date(dateA).getTime()
+    const timestampB = new Date(dateB).getTime()
+
     // Si les dates sont différentes, trier par date
-    if (dateA !== dateB) {
-      return dateA - dateB
+    if (timestampA !== timestampB) {
+      return timestampA - timestampB
     }
-    
-    // Si les dates sont identiques, trier par heure de début (start_time)
-    if (a.start_time && b.start_time) {
-      return a.start_time.localeCompare(b.start_time)
+
+    // Si les dates sont identiques, trier par heure de début
+    const timeA = getEventStartTime(a)
+    const timeB = getEventStartTime(b)
+
+    if (timeA && timeB) {
+      return timeA.localeCompare(timeB)
     }
-    
+
     // Si une seule des deux a start_time, celle-ci passe en premier
-    if (a.start_time && !b.start_time) return -1
-    if (!a.start_time && b.start_time) return 1
-    
+    if (timeA && !timeB) return -1
+    if (!timeA && timeB) return 1
+
     return 0
   })
 })

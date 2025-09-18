@@ -85,36 +85,47 @@ onMounted(async () => {
       biennaleCanvas.id('biennale-canvas')
       biennaleCanvas.parent('biennale-container')
       biennaleCanvas.style('display', 'block')
-      biennaleCanvas.style('touch-action', 'none')
+      // Permettre les interactions tactiles natives (scroll, zoom, etc.)
+      biennaleCanvas.style('touch-action', 'auto')
 
       p.textFont(animFont)
       imgOffset = p.floor(p.random(imgs.length))
       p.textAlign(p.CENTER, p.CENTER)
 
-      // Event listeners
-      biennaleCanvas.elt.addEventListener('touchstart', preventDefault, { passive: false })
-      biennaleCanvas.elt.addEventListener('touchmove', preventDefault, { passive: false })
+      // Event listeners - désactivés pour permettre le scroll sur mobile
+      // biennaleCanvas.elt.addEventListener('touchstart', preventDefault, { passive: false })
+      // biennaleCanvas.elt.addEventListener('touchmove', preventDefault, { passive: false })
 
       biennaleCanvas.mouseOver(() => {
-        isMouseOutside = false
-        isIdleMode = false
+        // Seulement sur desktop
+        if (!isTouchDevice()) {
+          isMouseOutside = false
+          isIdleMode = false
+        }
       })
 
       biennaleCanvas.mouseOut(() => {
-        isMouseOutside = true
-        isIdleMode = true
-        idlePath = []
-        idleIndex = 0
-        generateIdlePath()
+        // Seulement sur desktop
+        if (!isTouchDevice()) {
+          isMouseOutside = true
+          isIdleMode = true
+          idlePath = []
+          idleIndex = 0
+          generateIdlePath()
+        }
       })
 
       pathSeed = p.floor(p.random(100000))
       lastMouseMoveTime = p.millis()
+
+      // Sur mobile, lancer l'animation automatique immédiatement
+      if (isTouchDevice()) {
+        isIdleMode = true
+        isMouseOutside = true
+        generateIdlePath()
+      }
     }
 
-    const preventDefault = (e: Event) => {
-      e.preventDefault()
-    }
 
     const calculateCanvasSize = () => {
       const container = document.getElementById("biennale-container")
@@ -167,7 +178,8 @@ onMounted(async () => {
     p.draw = () => {
       p.background(208)
 
-      if (!isMouseOutside && p.millis() - lastMouseMoveTime > idleDelay && !isIdleMode) {
+      // Seulement déclencher le mode idle par timeout sur desktop
+      if (!isTouchDevice() && !isMouseOutside && p.millis() - lastMouseMoveTime > idleDelay && !isIdleMode) {
         isIdleMode = true
         idlePath = []
         idleIndex = 0
@@ -313,16 +325,7 @@ onMounted(async () => {
     }
 
     p.touchMoved = () => {
-      if (p.touches.length > 0) {
-        lastMouseMoveTime = p.millis()
-        if (isIdleMode) isIdleMode = false
-
-        const last = points[points.length - 1]
-        const tx = p.touches[0].x, ty = p.touches[0].y
-        if (!last || p.dist(tx, ty, last.x, last.y) >= scaledLetterSpacing) {
-          addPoint(tx, ty)
-        }
-      }
+      // Désactiver l'interaction tactile sur mobile
       return false
     }
 

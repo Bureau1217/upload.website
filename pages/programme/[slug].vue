@@ -51,7 +51,17 @@ const { data, status, error } = await useFetch<CMSFetchData<EventData>>('/api/CM
       title: true,
       slug: true,
       date: true,
-      time: true,
+      start_time: true,
+      end_time: true,
+      dates: {
+        query: 'page.dates.toStructure',
+        select: {
+          date: true,
+          end_date: true,
+          start_time: true,
+          end_time: true
+        }
+      },
       address: true,
       googlemaps: true,
       description: true,

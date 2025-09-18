@@ -26,12 +26,6 @@
 
     </template>
 
-    <template v-else-if="status === 'error' || !exposant">
-      <AppLoadingState type="error" title="Exposant introuvable" message="Cet exposant n'existe pas ou n'est pas disponible." />
-      <div style="text-align: center; margin-top: 1rem;">
-        <NuxtLink to="/exposants">← Retour aux exposants</NuxtLink>
-      </div>
-    </template>
 
     <template v-else>
       <AppLoadingState type="loading" />
@@ -45,7 +39,7 @@ const route = useRoute()
 const slug = computed(() => route.params.slug as string)
 
 // Récupérer l'exposant individuel
-const { data, status } = await useFetch<CMSFetchData<ExposantData>>('/api/CMS_KQLRequest', {
+const { data } = await useFetch<CMSFetchData<ExposantData>>('/api/CMS_KQLRequest', {
   lazy: true,
   method: 'POST',
   body: {
@@ -97,24 +91,12 @@ const { data: allExposantsData } = await useFetch<CMSListData<ExposantData>>('/a
   }
 })
 
-// Fonction pour mélanger un array de manière aléatoire
-const shuffleArray = <T>(array: T[]): T[] => {
-  const shuffled = [...array]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    const temp = shuffled[i]!
-    shuffled[i] = shuffled[j]!
-    shuffled[j] = temp
-  }
-  return shuffled
-}
-
 const exposant = computed(() => data.value?.result ?? null)
 const allExposants = computed(() => {
   const exposants = allExposantsData.value?.result || []
-  // Exclure l'exposant actuel de la liste et mélanger aléatoirement
+  // Exclure l'exposant actuel de la liste et trier par ordre alphabétique
   const autresExposants = exposants.filter(exp => exp.slug !== slug.value)
-  return shuffleArray(autresExposants)
+  return autresExposants.sort((a, b) => a.title.localeCompare(b.title))
 })
 
 </script>

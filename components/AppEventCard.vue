@@ -21,12 +21,28 @@
               <div class="meta-item">
                 {{ getEventTypeLabel(event.event_type) }}
               </div>
-              <div v-if="event.date" class="meta-item">
-                {{ formatDate(event.date) }}
-              </div>
-              <div v-if="displayTime" class="meta-item">
-                {{ displayTime }}
-              </div>
+              <!-- Afficher toutes les dates si plusieurs, sinon format classique -->
+              <template v-if="hasMultipleDates(event)">
+                <div class="meta-item">
+                  <div class="multiple-dates-hover">
+                    <div v-for="(dateEntry, index) in event.dates" :key="index" class="date-entry-hover">
+                      <span class="date-part">{{ formatSingleDate(dateEntry.date) }}</span>
+                      <span v-if="dateEntry.start_time || dateEntry.end_time" class="time-part">
+                        {{ formatTimeRange(dateEntry.start_time, dateEntry.end_time) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <!-- Format classique pour un seul événement -->
+              <template v-else>
+                <div v-if="getEventDate(event)" class="meta-item">
+                  {{ formatDateRange(event) }}
+                </div>
+                <div v-if="getEventTimeRange(event)" class="meta-item">
+                  {{ getEventTimeRange(event) }}
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -59,7 +75,7 @@ interface Props {
   event: EventData
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const isExpanded = ref(false)
 
@@ -89,9 +105,27 @@ const getEventTypeLabel = (type: string) => {
   return labels[type as keyof typeof labels] || type
 }
 
+// Helpers pour récupérer les données de date (compatibilité ancien/nouveau format)
+const getEventDate = (event: EventData) => {
+  // Prendre la première entrée du tableau dates si elle existe, sinon l'ancien champ
+  return event.dates?.[0]?.date || event.date
+}
+
+const getEventStartTime = (event: EventData) => {
+  return event.dates?.[0]?.start_time || event.start_time
+}
+
+const getEventEndTime = (event: EventData) => {
+  return event.dates?.[0]?.end_time || event.end_time
+}
+
+const getEventEndDate = (event: EventData) => {
+  return event.dates?.[0]?.end_date
+}
+
 const formatDate = (dateString: string) => {
   if (!dateString) return ''
-  
+
   try {
     const date = new Date(dateString)
     const day = date.getDate()
@@ -102,18 +136,72 @@ const formatDate = (dateString: string) => {
   }
 }
 
-const displayTime = computed(() => {
-  if (!props.event.start_time) return ''
-  
+// Formater la plage de dates
+const formatDateRange = (event: EventData) => {
+  const startDate = getEventDate(event)
+  const endDate = getEventEndDate(event)
+
+  if (!startDate) return ''
+
+  if (endDate && endDate !== startDate) {
+    return `${formatDate(startDate)}-${formatDate(endDate)}`
+  }
+
+  return formatDate(startDate)
+}
+
+// Formater la plage d'heures
+const getEventTimeRange = (event: EventData) => {
+  const startTime = getEventStartTime(event)
+  const endTime = getEventEndTime(event)
+
+  if (!startTime) return ''
+
   const formatTime = (time: string) => {
     // Enlever les secondes si présentes et remplacer : par h
     return time.split(':').slice(0, 2).join('h')
   }
-  
-  return props.event.end_time 
-    ? `${formatTime(props.event.start_time)}-${formatTime(props.event.end_time)}`
-    : formatTime(props.event.start_time)
-})
+
+  if (endTime) {
+    return `${formatTime(startTime)}-${formatTime(endTime)}`
+  }
+
+  return formatTime(startTime)
+}
+
+// Vérifier si l'événement a plusieurs dates
+const hasMultipleDates = (event: EventData) => {
+  return event.dates && event.dates.length > 1
+}
+
+// Formater une date unique (pour l'affichage multiple) - format court pour hover
+const formatSingleDate = (dateString: string) => {
+  if (!dateString) return ''
+
+  try {
+    const date = new Date(dateString)
+    const day = date.getDate()
+    const month = date.getMonth() + 1 // getMonth() retourne 0-11
+    return `${day}.${month}`
+  } catch (error) {
+    return dateString
+  }
+}
+
+// Formater une plage d'heures (pour l'affichage multiple)
+const formatTimeRange = (startTime: string, endTime?: string) => {
+  if (!startTime) return ''
+
+  const formatTime = (time: string) => {
+    return time.split(':').slice(0, 2).join('h')
+  }
+
+  if (endTime) {
+    return `${formatTime(startTime)}-${formatTime(endTime)}`
+  }
+
+  return formatTime(startTime)
+}
 
 const { getCmsImageUrl } = useCmsImage()
 
@@ -220,6 +308,44 @@ onUnmounted(() => {
     &:last-child {
       margin-bottom: 0;
     }
+  }
+}
+
+.dates-title {
+  margin-bottom: var(--space-xs);
+  font-size: 1.2rem; /* Même taille que les meta-item */
+  font-weight: bold; /* Même style que les meta-item */
+  line-height: 1.15; /* Même line-height que les meta-item */
+  color: white;
+}
+
+.multiple-dates-hover {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.date-entry-hover {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.2rem; /* Même taille que les meta-item */
+  font-weight: bold; /* Même style que les meta-item */
+  line-height: 1.15; /* Même line-height que les meta-item */
+  color: white;
+
+  .date-part {
+    flex: 1;
+    color: white;
+    font-size: 1.2rem; /* Même taille que les meta-item */
+    font-weight: bold; /* Même style que les meta-item */
+  }
+
+  .time-part {
+    font-size: 1.2rem; /* Même taille que les meta-item */
+    font-weight: bold; /* Même style que les meta-item */
+    margin-left: var(--space-m);
+    color: white;
   }
 }
 

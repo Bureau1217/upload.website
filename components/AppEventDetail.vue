@@ -8,12 +8,27 @@
     
     <!-- Informations essentielles -->
     <div class="event-meta">
-      <div v-if="event.date" class="meta-item">
-        <strong>Date :</strong> {{ formatDate(event.date) }}
+      <!-- Afficher toutes les dates si plusieurs, sinon format classique -->
+      <div v-if="hasMultipleDates(event)" class="meta-item">
+        <strong>Dates :</strong>
+        <div class="multiple-dates">
+          <div v-for="(dateEntry, index) in event.dates" :key="index" class="date-entry">
+            {{ formatSingleDate(dateEntry.date) }}
+            <span v-if="dateEntry.start_time || dateEntry.end_time" class="time-entry">
+              {{ formatTimeRange(dateEntry.start_time, dateEntry.end_time) }}
+            </span>
+          </div>
+        </div>
       </div>
-      <div v-if="displayTime" class="meta-item">
-        <strong>Heure :</strong> {{ displayTime }}
-      </div>
+      <!-- Format classique pour un seul événement -->
+      <template v-else>
+        <div v-if="getEventDate(event)" class="meta-item">
+          <strong>Date :</strong> {{ formatDateRange(event) }}
+        </div>
+        <div v-if="getEventTimeRange(event)" class="meta-item">
+          <strong>Heure :</strong> {{ getEventTimeRange(event) }}
+        </div>
+      </template>
       <div v-if="event.address" class="meta-item">
         <strong>Lieu :</strong> {{ event.address }}
         <a v-if="event.googlemaps" :href="event.googlemaps" target="_blank" class="maps-link">
@@ -36,7 +51,7 @@
         <h3>Informations atelier</h3>
         <div class="specific-info">
           <div v-if="event.atelier_instructor" class="info-item">
-            <strong>Instructeur :</strong> {{ event.atelier_instructor }}
+            <strong>Intervenant(·e·s) :</strong> {{ event.atelier_instructor }}
           </div>
           <div v-if="event.atelier_capacity" class="info-item">
             <strong>Capacité :</strong> {{ event.atelier_capacity }} participants
@@ -52,7 +67,8 @@
         <h3>Informations conférence</h3>
         <div class="specific-info">
           <div v-if="event.speakers" class="info-item">
-            <strong>Intervenant(s) :</strong> {{ event.speakers }}
+            <strong>Intervenant(·e·s) :</strong>
+            <span v-html="parseLinksInText(event.speakers)"></span>
           </div>
         </div>
       </template>
@@ -79,7 +95,7 @@
     </div>
     
     <!-- Réservation -->
-    <div v-if="event.reservation_enabled === 'true' && event.reservation_url" class="event-reservation">
+    <div v-if="(event.reservation_enabled === true || event.reservation_enabled === 'true') && event.reservation_url" class="event-reservation">
       <h3>Réservation</h3>
       <p>Cet événement nécessite une réservation préalable</p>
       <AppButton>
@@ -100,6 +116,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
+
 const getEventTypeLabel = (type: string) => {
   const labels = {
     exposition: 'Exposition',
@@ -110,9 +127,27 @@ const getEventTypeLabel = (type: string) => {
   return labels[type as keyof typeof labels] || type
 }
 
+// Helpers pour récupérer les données de date (compatibilité ancien/nouveau format)
+const getEventDate = (event: EventData) => {
+  // Prendre la première entrée du tableau dates si elle existe, sinon l'ancien champ
+  return event.dates?.[0]?.date || event.date
+}
+
+const getEventStartTime = (event: EventData) => {
+  return event.dates?.[0]?.start_time || event.start_time
+}
+
+const getEventEndTime = (event: EventData) => {
+  return event.dates?.[0]?.end_time || event.end_time
+}
+
+const getEventEndDate = (event: EventData) => {
+  return event.dates?.[0]?.end_date
+}
+
 const formatDate = (dateString: string) => {
   if (!dateString) return ''
-  
+
   try {
     const date = new Date(dateString)
     return date.toLocaleDateString('fr-CH', {
@@ -126,18 +161,82 @@ const formatDate = (dateString: string) => {
   }
 }
 
-const displayTime = computed(() => {
-  if (!props.event.start_time) return ''
-  
+// Formater la plage de dates
+const formatDateRange = (event: EventData) => {
+  const startDate = getEventDate(event)
+  const endDate = getEventEndDate(event)
+
+
+  if (!startDate) return ''
+
+  if (endDate && endDate !== startDate) {
+    return `Du ${formatDate(startDate)} au ${formatDate(endDate)}`
+  }
+
+  return formatDate(startDate)
+}
+
+// Formater la plage d'heures
+const getEventTimeRange = (event: EventData) => {
+  const startTime = getEventStartTime(event)
+  const endTime = getEventEndTime(event)
+
+
+  if (!startTime) return ''
+
   const formatTime = (time: string) => {
     // Enlever les secondes si présentes et remplacer : par h
     return time.split(':').slice(0, 2).join('h')
   }
-  
-  return props.event.end_time 
-    ? `${formatTime(props.event.start_time)}-${formatTime(props.event.end_time)}`
-    : formatTime(props.event.start_time)
-})
+
+  if (endTime) {
+    return `${formatTime(startTime)}-${formatTime(endTime)}`
+  }
+
+  return formatTime(startTime)
+}
+
+// Vérifier si l'événement a plusieurs dates
+const hasMultipleDates = (event: EventData) => {
+  return event.dates && event.dates.length > 1
+}
+
+// Formater une date unique (pour l'affichage multiple)
+const formatSingleDate = (dateString: string) => {
+  if (!dateString) return ''
+
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('fr-CH', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short'
+    })
+  } catch (error) {
+    return dateString
+  }
+}
+
+// Formater une plage d'heures (pour l'affichage multiple)
+const formatTimeRange = (startTime: string, endTime?: string) => {
+  if (!startTime) return ''
+
+  const formatTime = (time: string) => {
+    return time.split(':').slice(0, 2).join('h')
+  }
+
+  if (endTime) {
+    return `${formatTime(startTime)}-${formatTime(endTime)}`
+  }
+
+  return formatTime(startTime)
+}
+
+// Parse les liens KirbyText: (link: URL text: TEXTE)
+const parseLinksInText = (text: string) => {
+  if (!text) return ''
+  return text.replace(/\(link:\s*([^\s]+)\s+text:\s*([^)]+)\)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$2</a>')
+}
 
 const hasSpecificInfo = computed(() => {
   const { event } = props
@@ -243,6 +342,15 @@ const hasSpecificInfo = computed(() => {
   display: flex;
   align-items: baseline;
   gap: var(--space-s);
+
+  :deep(a) {
+    color: var(--color-black);
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
 }
 
 .event-reservation {
@@ -262,6 +370,28 @@ const hasSpecificInfo = computed(() => {
       color: inherit;
     }
   }
+}
+
+.multiple-dates {
+  margin-top: var(--space-xs);
+}
+
+.date-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid #eee;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.time-entry {
+  font-weight: bold;
+  color: var(--color-black);
+  font-size: 0.9rem;
 }
 
 @media (max-width: 768px) {
