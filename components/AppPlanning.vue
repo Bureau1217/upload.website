@@ -1,10 +1,9 @@
 <template>
   <div class="planning" v-if="planningContent">
-    <h2 class="planning-title">Planning détaillé</h2>
+    <h2 class="planning-title">Programme conférences 4 octobre</h2>
     <div class="planning-content" v-html="planningContent"></div>
   </div>
 </template>
-
 <script setup lang="ts">
 interface Props {
   planningContent?: string

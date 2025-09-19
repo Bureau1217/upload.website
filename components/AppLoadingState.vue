@@ -87,7 +87,7 @@ onMounted(async () => {
         // Chargement de la police et des images
         try {
           animFont = await p.loadFont("/fonts/Helvetica-Bold.ttf")
-          
+
           // Chargement des images
           const imagePromises = []
           for (let i = 1; i < 24; i++) {
@@ -106,15 +106,17 @@ onMounted(async () => {
         canvas.style('height', '100%')
         canvas.style('display', 'block')
         
-        p.textFont(animFont)
+        if (animFont) {
+          p.textFont(animFont)
+        }
         imgOffset = p.floor(p.random(imgs.length))
         p.textAlign(p.CENTER, p.CENTER)
         
         // Tailles fixes pour éviter la déformation
         const isMobile = window.innerWidth <= 768
         if (isMobile) {
-          baseLetterSize = 32
-          baseCaseWidth = 36
+          baseLetterSize = 36  // Augmenté de 32 à 36 pour que le bold soit plus visible
+          baseCaseWidth = 48  // Augmenté de 36 à 48 pour plus de largeur
           baseCaseHeight = 40
         } else {
           scaleFactor = Math.min(canvasWidth, canvasHeight) / 300
@@ -206,8 +208,8 @@ onMounted(async () => {
         // Recalculer les tailles
         const isMobile = window.innerWidth <= 768
         if (isMobile) {
-          baseLetterSize = 32
-          baseCaseWidth = 36
+          baseLetterSize = 36  // Augmenté de 32 à 36 pour que le bold soit plus visible
+          baseCaseWidth = 48  // Augmenté de 36 à 48 pour plus de largeur
           baseCaseHeight = 40
         } else {
           scaleFactor = Math.min(canvasWidth, canvasHeight) / 300

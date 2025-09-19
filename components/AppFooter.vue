@@ -141,7 +141,6 @@ const addressInfo = computed(() => {
 
 const partnerLogos = computed(() => {
   const logos = footerData.value?.footer_partner_logos || infosData.value?.partners_logos || []
-  console.log('Partner logos:', logos)
   return logos
 })
 
@@ -153,17 +152,8 @@ const creditDev = computed(() => {
   return footerData.value?.footer_credit_dev || null
 })
 
-// Debug les données
-onMounted(() => {
-  console.log('Footer data:', footerData.value)
-  console.log('Infos data:', infosData.value)
-  console.log('Social networks:', socialNetworks.value)
-  console.log('Partner logos:', partnerLogos.value)
-  console.log('Partner logos count:', partnerLogos.value?.length)
-})
 
 const getSocialIcon = (social: any) => {
-  console.log('Social item:', social) // Debug
   // Si on a une icône SVG depuis le CMS
   if (social.icon?.url) {
     return `<img src="${getCmsImageUrl(social.icon.url)}" alt="${social.icon.alt || 'Social icon'}" class="social-svg" />`
@@ -293,6 +283,16 @@ const parseKirbyText = (text: string) => {
     line-height: 1.4;
     color: black;
     margin: 0;
+  }
+
+  // Supprimer le soulignement des liens dans tout le footer
+  :deep(a) {
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+      text-decoration: none;
+    }
   }
 }
 

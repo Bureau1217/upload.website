@@ -8,10 +8,12 @@
     
     <!-- Informations essentielles -->
     <div class="event-meta">
-      <!-- Afficher toutes les dates si plusieurs, sinon format classique -->
-      <div v-if="hasMultipleDates(event)" class="meta-item">
-        <strong>Dates :</strong>
-        <div class="multiple-dates">
+      <!-- Affichage unifié des dates -->
+      <div v-if="getEventDate(event)" class="meta-item">
+        <strong>{{ hasMultipleDates(event) ? 'Dates' : 'Date' }} :</strong>
+
+        <!-- Plusieurs dates -->
+        <div v-if="hasMultipleDates(event)" class="multiple-dates">
           <div v-for="(dateEntry, index) in event.dates" :key="index" class="date-entry">
             {{ formatSingleDate(dateEntry.date) }}
             <span v-if="dateEntry.start_time || dateEntry.end_time" class="time-entry">
@@ -19,16 +21,15 @@
             </span>
           </div>
         </div>
+
+        <!-- Une seule date -->
+        <div v-else class="date-entry">
+          {{ formatDateRange(event) }}
+          <span v-if="getEventTimeRange(event)" class="time-entry">
+            {{ getEventTimeRange(event) }}
+          </span>
+        </div>
       </div>
-      <!-- Format classique pour un seul événement -->
-      <template v-else>
-        <div v-if="getEventDate(event)" class="meta-item">
-          <strong>Date :</strong> {{ formatDateRange(event) }}
-        </div>
-        <div v-if="getEventTimeRange(event)" class="meta-item">
-          <strong>Heure :</strong> {{ getEventTimeRange(event) }}
-        </div>
-      </template>
       <div v-if="event.address" class="meta-item">
         <strong>Lieu :</strong> {{ event.address }}
         <a v-if="event.googlemaps" :href="event.googlemaps" target="_blank" class="maps-link">
@@ -145,21 +146,6 @@ const getEventEndDate = (event: EventData) => {
   return event.dates?.[0]?.end_date
 }
 
-const formatDate = (dateString: string) => {
-  if (!dateString) return ''
-
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('fr-CH', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
-  } catch (error) {
-    return dateString
-  }
-}
 
 // Formater la plage de dates
 const formatDateRange = (event: EventData) => {
@@ -170,10 +156,10 @@ const formatDateRange = (event: EventData) => {
   if (!startDate) return ''
 
   if (endDate && endDate !== startDate) {
-    return `Du ${formatDate(startDate)} au ${formatDate(endDate)}`
+    return `Du ${formatSingleDate(startDate)} au ${formatSingleDate(endDate)}`
   }
 
-  return formatDate(startDate)
+  return formatSingleDate(startDate)
 }
 
 // Formater la plage d'heures
@@ -200,6 +186,7 @@ const getEventTimeRange = (event: EventData) => {
 const hasMultipleDates = (event: EventData) => {
   return event.dates && event.dates.length > 1
 }
+
 
 // Formater une date unique (pour l'affichage multiple)
 const formatSingleDate = (dateString: string) => {

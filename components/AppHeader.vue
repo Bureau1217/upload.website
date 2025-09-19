@@ -115,7 +115,9 @@ const updateActiveStates = () => {
   if (!navLinks) return
 
   navLinks.forEach((link, index) => {
-    if (link.classList.contains('router-link-active')) {
+    const isActive = link.classList.contains('router-link-active') || link.classList.contains('router-link-exact-active')
+
+    if (isActive) {
       applyFixedDistortion(index)
     } else {
       resetNav(index)
@@ -125,6 +127,9 @@ const updateActiveStates = () => {
 
 onMounted(() => {
   nextTick(() => {
+    // S'assurer qu'on est côté client
+    if (typeof window === 'undefined') return
+
     // Utiliser des sélecteurs DOM uniquement dans le header pour éviter les conflits
     const headerElement = document.querySelector('.app-header')
     if (!headerElement) return
@@ -182,18 +187,31 @@ onMounted(() => {
     // État initial
     updateActiveStates()
 
-    // Watcher simple pour les changements de route
-    watch(() => route.path, () => {
-      // D'abord tout remettre à zéro
-      if (navLinks) {
-        navLinks.forEach((_, index) => resetNav(index))
-      }
-      // Puis appliquer les nouveaux états
-      setTimeout(updateActiveStates, 100)
+    // Observer les changements de classes sur les liens de navigation
+    const observer = new MutationObserver(() => {
+      updateActiveStates()
+    })
+
+    // Observer chaque lien pour les changements de classe
+    navLinks.forEach((link) => {
+      observer.observe(link, {
+        attributes: true,
+        attributeFilter: ['class']
+      })
     })
 
     // Ajouter le scroll listener
     window.addEventListener('scroll', handleScroll, { passive: true })
+
+    // Stocker la référence pour le nettoyage
+    const cleanup = () => {
+      observer.disconnect()
+      document.body.style.overflow = ''
+      window.removeEventListener('scroll', handleScroll)
+    }
+
+    // Retourner la fonction de nettoyage
+    return cleanup
   })
 })
 
