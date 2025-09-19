@@ -1,23 +1,28 @@
 <template>
-  <main class="v-programme">
+  <!-- Loader en dehors du main comme les autres pages -->
+  <template v-if="status === 'pending'">
+    <AppLoadingState type="loading" />
+  </template>
+
+  <!-- Contenu de la page -->
+  <main v-else class="v-programme">
     <section class="section">
-      <h1>Programme</h1>
-      
       <template v-if="data && data.status === 'ok' && evenements?.length">
+        <h1>Programme</h1>
         <!-- Filtres et PDF -->
         <div class="programme-header">
-          <AppProgrammeFilter 
-            :events="evenements" 
-            @filter="onFilterChange" 
+          <AppProgrammeFilter
+            :events="evenements"
+            @filter="onFilterChange"
           />
-          
+
           <!-- Lien de téléchargement PDF -->
           <div v-if="programmePdfs?.length" class="pdf-download">
             <h3>
-              <a 
-                v-for="pdf in programmePdfs" 
+              <a
+                v-for="pdf in programmePdfs"
                 :key="pdf.url"
-                :href="getFileUrl(pdf.url)" 
+                :href="getFileUrl(pdf.url)"
                 download
                 class="pdf-link"
               >
@@ -26,16 +31,16 @@
             </h3>
           </div>
         </div>
-        
+
         <!-- Liste des événements filtrés -->
         <div class="grid-responsive">
-          <AppEventCard 
-            v-for="event in filteredEvents" 
+          <AppEventCard
+            v-for="event in filteredEvents"
             :key="event.slug"
             :event="event"
           />
         </div>
-        
+
         <!-- Message si aucun résultat après filtrage -->
         <div v-if="filteredEvents.length === 0 && hasActiveFilters" class="no-results">
           <p>Aucun événement ne correspond aux filtres sélectionnés.</p>
@@ -51,10 +56,6 @@
 
       <template v-else-if="status === 'success' && evenements?.length === 0">
         <AppLoadingState type="empty" title="Aucun événement" message="Le programme n'est pas encore disponible." />
-      </template>
-
-      <template v-else>
-        <AppLoadingState type="loading" />
       </template>
     </section>
   </main>

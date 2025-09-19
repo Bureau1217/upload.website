@@ -53,7 +53,13 @@ const { data } = await useFetch<CMSFetchData<ExposantData>>('/api/CMS_KQLRequest
       info_category: true,
       info_bio_studio: true,
       info_link_website: true,
+      info_link_website_text: true,
+      info_link_website2: true,
+      info_link_website2_text: true,
       info_link_social: true,
+      info_link_social_text: true,
+      info_link_social2: true,
+      info_link_social2_text: true,
       info_image: {
         query: 'page.info_image.toFiles.first',
         select: {

@@ -24,23 +24,49 @@
     
     <!-- Boutons d'action -->
     <div class="action-buttons">
-      <AppButton 
-        v-if="exposant.info_bio_studio" 
-        text="Bio" 
+      <AppButton
+        v-if="exposant.info_bio_studio"
+        text="Bio"
         @click="openBioModal"
       />
-      
-      <AppButton 
-        v-if="exposant.info_link_website" 
-        text="Site web" 
-        @click="openWebsite"
-      />
-      
-      <AppButton 
-        v-if="exposant.info_link_social" 
-        text="Instagram" 
-        @click="openInstagram"
-      />
+
+      <!-- Site web avec menu dropdown si plusieurs liens -->
+      <div v-if="exposant.info_link_website" class="button-dropdown">
+        <AppButton
+          :text="hasMultipleWebsites ? 'Site web ▾' : 'Site web'"
+          @click="openWebsite"
+        />
+
+        <div v-if="showWebsiteMenu && hasMultipleWebsites" class="dropdown-menu">
+          <AppButton
+            :text="exposant.info_link_website_text || exposant.info_link_website"
+            @click="openSpecificWebsite(exposant.info_link_website)"
+          />
+          <AppButton
+            :text="exposant.info_link_website2_text || exposant.info_link_website2"
+            @click="openSpecificWebsite(exposant.info_link_website2)"
+          />
+        </div>
+      </div>
+
+      <!-- Instagram avec menu dropdown si plusieurs liens -->
+      <div v-if="exposant.info_link_social" class="button-dropdown">
+        <AppButton
+          :text="hasMultipleInstagram ? 'Instagram ▾' : 'Instagram'"
+          @click="openInstagram"
+        />
+
+        <div v-if="showInstagramMenu && hasMultipleInstagram" class="dropdown-menu">
+          <AppButton
+            :text="exposant.info_link_social_text || exposant.info_link_social"
+            @click="openSpecificInstagram(exposant.info_link_social)"
+          />
+          <AppButton
+            :text="exposant.info_link_social2_text || exposant.info_link_social2"
+            @click="openSpecificInstagram(exposant.info_link_social2)"
+          />
+        </div>
+      </div>
     </div>
     
     <!-- Modal Bio -->
@@ -62,6 +88,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const showBioModal = ref(false)
+const showWebsiteMenu = ref(false)
+const showInstagramMenu = ref(false)
 
 const openBioModal = () => {
   showBioModal.value = true
@@ -71,16 +99,40 @@ const closeBioModal = () => {
   showBioModal.value = false
 }
 
+const hasMultipleWebsites = computed(() => {
+  return props.exposant.info_link_website && props.exposant.info_link_website2
+})
+
+const hasMultipleInstagram = computed(() => {
+  return props.exposant.info_link_social && props.exposant.info_link_social2
+})
+
 const openWebsite = () => {
-  if (props.exposant.info_link_website) {
+  if (hasMultipleWebsites.value) {
+    showWebsiteMenu.value = !showWebsiteMenu.value
+    showInstagramMenu.value = false
+  } else if (props.exposant.info_link_website) {
     window.open(props.exposant.info_link_website, '_blank')
   }
 }
 
 const openInstagram = () => {
-  if (props.exposant.info_link_social) {
+  if (hasMultipleInstagram.value) {
+    showInstagramMenu.value = !showInstagramMenu.value
+    showWebsiteMenu.value = false
+  } else if (props.exposant.info_link_social) {
     window.open(props.exposant.info_link_social, '_blank')
   }
+}
+
+const openSpecificWebsite = (url: string) => {
+  window.open(url, '_blank')
+  showWebsiteMenu.value = false
+}
+
+const openSpecificInstagram = (url: string) => {
+  window.open(url, '_blank')
+  showInstagramMenu.value = false
 }
 
 const getCategoryLabel = (category: string) => {
@@ -138,6 +190,33 @@ const getCategoryLabel = (category: string) => {
   display: flex;
   gap: var(--space-m);
   flex-wrap: wrap;
+}
+
+.button-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  margin-top: -2px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  background: white;
+  border: 2px solid var(--color-black);
+  padding: var(--space-s);
+  width: 250px;
+  max-width: calc(100vw - 2rem);
+
+  :deep(.app-button) {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    text-align: left;
+  }
 }
 
 /* Espacement des paragraphes dans le contenu */

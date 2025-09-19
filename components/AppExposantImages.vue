@@ -15,10 +15,10 @@
 </template>
 
 <script setup lang="ts">
-import type { CMS_API_ImageObject } from '~/types/cms'
+import type { CMS_API_ImageObject, CMS_API_PartialImageObject, CMS_API_SimpleImage } from '~/types/cms'
 
 interface Props {
-  images: CMS_API_ImageObject[]
+  images: (CMS_API_ImageObject | CMS_API_PartialImageObject | CMS_API_SimpleImage)[]
   exposantName: string
 }
 

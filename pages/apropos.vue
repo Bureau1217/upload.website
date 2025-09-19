@@ -1,6 +1,6 @@
 <template>
   <main class="v-apropos">
-    <template v-if="data && data.status === 'ok'">
+    <template v-if="data && data.status === 'ok' && data.result">
       
       <section class="section">
         <!-- Section Biennale -->
@@ -8,8 +8,8 @@
           <!-- Colonne gauche : Contenu biennale -->
           <div class="content-text-column">
             <h1 v-if="data.result.biennale_title">{{ data.result.biennale_title }}</h1>
-            <div v-if="data.result.biennale_description" 
-                 v-html="data.result.biennale_description" 
+            <div v-if="data.result.biennale_description"
+                 v-html="data.result.biennale_description"
                  class="biennale-description"></div>
             
             <!-- Crédits et Commissariat -->

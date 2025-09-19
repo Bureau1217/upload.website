@@ -24,7 +24,13 @@ export type ExposantData = {
   info_category: string
   info_bio_studio: string
   info_link_website: string
+  info_link_website_text: string
+  info_link_website2: string
+  info_link_website2_text: string
   info_link_social: string
+  info_link_social_text: string
+  info_link_social2: string
+  info_link_social2_text: string
   info_image: import('~/types/cms').CMS_API_ImageObject | import('~/types/cms').CMS_API_PartialImageObject | import('~/types/cms').CMS_API_PartialImageObject[] | import('~/types/cms').CMS_API_SimpleImage
 }
 
@@ -84,6 +90,12 @@ export type AproposData = {
   biennale_image: string
   partners_title: string
   partners_text: string
+  partners_logos?: Array<{
+    url: string
+    alt: string
+    width: number
+    height: number
+  }>
 }
 
 export type InfosPratiquesData = {

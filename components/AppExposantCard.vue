@@ -6,7 +6,7 @@ h<template>
         <img
           v-if="exposant.info_image && imageUrl"
           :src="imageUrl"
-          :alt="exposant.info_image?.alt || exposant.title"
+          :alt="imageAlt"
           class="exposant-image"
           loading="lazy"
           decoding="async"
@@ -64,6 +64,24 @@ const imageUrl = computed(() => {
   }
 
   return ''
+})
+
+// Alt text avec gestion des différents types d'images
+const imageAlt = computed(() => {
+  const image = props.exposant?.info_image
+  if (!image) return props.exposant.title
+
+  // Si c'est un tableau, prendre le premier élément
+  if (Array.isArray(image)) {
+    return image[0]?.alt || props.exposant.title
+  }
+
+  // Si c'est un objet avec alt
+  if ('alt' in image) {
+    return image.alt || props.exposant.title
+  }
+
+  return props.exposant.title
 })
 
 const onImageLoad = () => {

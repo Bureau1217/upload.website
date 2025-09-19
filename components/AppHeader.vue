@@ -1,8 +1,8 @@
 <template>
-  <header class="app-header">
+  <header class="app-header" :class="{ 'header-hidden': !isHeaderVisible && !isMobileMenuOpen }">
     <div class="header-content">
       <!-- Logo (à gauche, plus petit) -->
-      <NuxtLink to="/" class="logo-link">
+      <NuxtLink to="/" class="logo-link" @click="closeMobileMenu">
         <img src="/img/Logo_Upload-Web.svg" alt="Upload Logo" class="logo" />
       </NuxtLink>
       
@@ -41,11 +41,17 @@ let navLinks: NodeListOf<HTMLElement> | null = null
 const isMobileMenuOpen = ref(false)
 const route = useRoute()
 
+// Header scroll behavior
+const isHeaderVisible = ref(true)
+let lastScrollY = 0
+
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
   // Désactiver/réactiver le scroll du body
   if (isMobileMenuOpen.value) {
     document.body.style.overflow = 'hidden'
+    // Forcer le header à être visible quand le menu s'ouvre
+    isHeaderVisible.value = true
   } else {
     document.body.style.overflow = ''
   }
@@ -57,28 +63,50 @@ const closeMobileMenu = () => {
   document.body.style.overflow = ''
 }
 
-const distortNav = (linkIndex: number, isActive = false) => {
+const handleScroll = () => {
+  // Ne pas gérer le scroll si le menu mobile est ouvert
+  if (isMobileMenuOpen.value) return
+
+  const currentScrollY = Math.max(0, window.scrollY)
+  const threshold = 80 // Même seuil sur desktop et mobile
+
+  if (currentScrollY < 10) {
+    isHeaderVisible.value = true
+  } else if (currentScrollY > lastScrollY && currentScrollY > threshold) {
+    isHeaderVisible.value = false
+  } else if (currentScrollY < lastScrollY) {
+    isHeaderVisible.value = true
+  }
+
+  lastScrollY = currentScrollY
+}
+
+// États fixes pour chaque lien basés sur la route
+const getFixedDistortion = (linkIndex: number) => {
+  const distortions = [
+    [5, -8, 3, -6, 2, -4, 7, -3, 1], // Graphistes
+    [4, -7, 9, -2, 6, -5, 3, -8, 1], // Programme
+    [-3, 7, -5, 2, -8, 4, -1, 6],   // À propos
+    [-6, 4, -9, 3, -2, 8, -4, 1, -7, 5, 2, -3, 6] // Infos pratiques
+  ]
+  return distortions[linkIndex] || []
+}
+
+const applyFixedDistortion = (linkIndex: number) => {
   if (!navChars[linkIndex] || navChars[linkIndex].length === 0) return
 
-  navChars[linkIndex].forEach((char) => {
+  const distortions = getFixedDistortion(linkIndex)
+  navChars[linkIndex].forEach((char, charIndex) => {
     if (char.classList.contains('space')) return
-
-    const randomY = (Math.random() * 20 - 10).toFixed(1) // Mouvement vertical seulement
-
-    char.style.transform = `translateY(${randomY}px)`
-    char.style.transition = isActive ? 'transform 0.6s ease-out' : 'transform 0.3s ease-out'
+    const yOffset = distortions[charIndex] || 0
+    char.style.transform = `translateY(${yOffset}px)`
   })
 }
 
-const resetNav = (linkIndex: number, link: HTMLElement, force = false) => {
+const resetNav = (linkIndex: number) => {
   if (!navChars[linkIndex] || navChars[linkIndex].length === 0) return
 
-  // Ne pas remettre en place si le lien est actif (sauf si forcé)
-  if (!force && link.classList.contains('router-link-active')) return
-
   navChars[linkIndex].forEach((char) => {
-    // Transition plus douce pour le reset
-    char.style.transition = 'transform 0.4s ease-out'
     char.style.transform = 'translateY(0px)'
   })
 }
@@ -86,23 +114,12 @@ const resetNav = (linkIndex: number, link: HTMLElement, force = false) => {
 const updateActiveStates = () => {
   if (!navLinks) return
 
-  // Attendre que Vue ait mis à jour les classes CSS
-  nextTick(() => {
-    // D'abord, forcer le reset de tous les liens (même les actifs)
-    navLinks.forEach((link, index) => {
-      resetNav(index, link, true) // force = true pour reset même les liens actifs
-    })
-
-    // Ensuite, appliquer l'effet au lien actif après un délai plus long
-    setTimeout(() => {
-      if (navLinks) {
-        navLinks.forEach((link, index) => {
-          if (link.classList.contains('router-link-active')) {
-            distortNav(index, true)
-          }
-        })
-      }
-    }, 200) // Délai augmenté pour une transition plus douce
+  navLinks.forEach((link, index) => {
+    if (link.classList.contains('router-link-active')) {
+      applyFixedDistortion(index)
+    } else {
+      resetNav(index)
+    }
   })
 }
 
@@ -140,44 +157,50 @@ onMounted(() => {
       // Récupérer tous les caractères pour ce lien
       navChars[index] = Array.from(link.querySelectorAll('.nav-char'))
       
-      // Ajouter les event listeners directement
+      // Event listeners hover (animation aléatoire)
       link.addEventListener('mouseenter', () => {
-        const isActive = link.classList.contains('router-link-active')
-        distortNav(index, isActive)
+        if (!navChars[index]) return
+        navChars[index].forEach((char) => {
+          if (char.classList.contains('space')) return
+          const randomY = (Math.random() * 20 - 10).toFixed(1)
+          char.style.transform = `translateY(${randomY}px)`
+        })
       })
-      link.addEventListener('mouseleave', () => resetNav(index, link))
-      
-      // Si le lien est actif dès le début, appliquer l'effet
-      if (link.classList.contains('router-link-active')) {
-        distortNav(index, true)
-      }
+
+      link.addEventListener('mouseleave', () => {
+        // Toujours remettre à zéro d'abord
+        resetNav(index)
+        // Puis appliquer l'état fixe après un délai si toujours actif
+        setTimeout(() => {
+          if (link.classList.contains('router-link-active')) {
+            applyFixedDistortion(index)
+          }
+        }, 50)
+      })
     })
 
-    // Appel initial pour s'assurer que l'état est correct
-    setTimeout(() => {
-      updateActiveStates()
-    }, 50)
+    // État initial
+    updateActiveStates()
 
-    // Surveiller les changements de route pour mettre à jour les états actifs
+    // Watcher simple pour les changements de route
     watch(() => route.path, () => {
-      // Forcer un reset immédiat de tous les liens
+      // D'abord tout remettre à zéro
       if (navLinks) {
-        navLinks.forEach((link, index) => {
-          resetNav(index, link, true)
-        })
+        navLinks.forEach((_, index) => resetNav(index))
       }
+      // Puis appliquer les nouveaux états
+      setTimeout(updateActiveStates, 100)
+    })
 
-      // Puis attendre que Nuxt mette à jour les classes router-link-active
-      setTimeout(() => {
-        updateActiveStates()
-      }, 300) // Délai plus long pour une transition plus naturelle
-    }, { immediate: true })
+    // Ajouter le scroll listener
+    window.addEventListener('scroll', handleScroll, { passive: true })
   })
 })
 
-// Nettoyer le scroll au démontage du composant
+// Nettoyer au démontage du composant
 onUnmounted(() => {
   document.body.style.overflow = ''
+  window.removeEventListener('scroll', handleScroll)
 })
 
 </script>
@@ -187,9 +210,16 @@ onUnmounted(() => {
 .app-header {
   background-color: white;
   border-bottom: 2px solid black;
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 1001;
+  left: 0;
+  right: 0;
+  z-index: 1002;
+  transition: transform 0.3s ease-in-out;
+
+  &.header-hidden {
+    transform: translateY(-100%);
+  }
 }
 
 .header-content {
@@ -329,7 +359,7 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .app-header {
-    position: relative;
+    position: fixed; // Garder fixe sur mobile aussi
   }
   
   .header-content {
@@ -353,7 +383,7 @@ onUnmounted(() => {
   
   .main-navigation {
     position: fixed;
-    top: 65px;
+    top: 65px; // Commencer sous le header mobile
     left: 0;
     right: 0;
     bottom: 0;

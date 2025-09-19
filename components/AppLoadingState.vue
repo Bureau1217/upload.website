@@ -68,9 +68,11 @@ onMounted(async () => {
       let baseCaseHeight = 35
       let scaleFactor = 1
       
-      // Canvas - dimensions de l'écran
-      let canvasWidth = window.innerWidth
-      let canvasHeight = window.innerHeight
+      // Canvas - dimensions du container avec ratio correct
+      let containerWidth = loaderContainer.value?.clientWidth || window.innerWidth
+      let containerHeight = loaderContainer.value?.clientHeight || window.innerHeight
+      let canvasWidth = containerWidth
+      let canvasHeight = containerHeight
       
       // Variables pour les points et le chemin infini
       let points: any[] = []
@@ -100,22 +102,26 @@ onMounted(async () => {
         canvas.parent(loaderContainer.value)
 
         // Forcer les dimensions CSS du canvas
-        canvas.style('width', '100vw')
-        canvas.style('height', '100vh')
+        canvas.style('width', '100%')
+        canvas.style('height', '100%')
         canvas.style('display', 'block')
-        canvas.style('position', 'absolute')
-        canvas.style('top', '0')
-        canvas.style('left', '0')
         
         p.textFont(animFont)
         imgOffset = p.floor(p.random(imgs.length))
         p.textAlign(p.CENTER, p.CENTER)
         
-        // Calculer l'espacement en fonction de la taille du canvas
-        scaleFactor = Math.min(canvasWidth, canvasHeight) / 300 // Augmenté de 500 à 300 pour être plus grand
-        baseLetterSize = 30 * scaleFactor
-        baseCaseWidth = 28 * scaleFactor
-        baseCaseHeight = 35 * scaleFactor
+        // Tailles fixes pour éviter la déformation
+        const isMobile = window.innerWidth <= 768
+        if (isMobile) {
+          baseLetterSize = 32
+          baseCaseWidth = 36
+          baseCaseHeight = 40
+        } else {
+          scaleFactor = Math.min(canvasWidth, canvasHeight) / 300
+          baseLetterSize = 30 * scaleFactor
+          baseCaseWidth = 28 * scaleFactor
+          baseCaseHeight = 35 * scaleFactor
+        }
       }
       
       p.draw = () => {
@@ -162,13 +168,19 @@ onMounted(async () => {
       const addInfinitePoint = () => {
         // Paramètres du symbole infini (lemniscate)
         const t = time + infinitePathIndex * 0.1
-        const scale = 120 * scaleFactor
+        // Échelle adaptée selon la largeur pour mobile
+        const isMobile = window.innerWidth <= 768
+        const scale = isMobile ?
+          canvasWidth * 0.25 : // Plus large que haut sur mobile
+          Math.min(canvasWidth, canvasHeight) * 0.2
         const centerX = canvasWidth / 2
         const centerY = canvasHeight / 2
-        
+
         // Équation paramétrique du symbole infini
         const x = centerX + (scale * p.cos(t)) / (1 + p.sin(t) * p.sin(t))
-        const y = centerY + (scale * p.sin(t) * p.cos(t)) / (1 + p.sin(t) * p.sin(t))
+        const isMobileY = window.innerWidth <= 768
+        const heightFactor = isMobileY ? 0.3 : 0.5
+        const y = centerY + (scale * heightFactor * p.sin(t) * p.cos(t)) / (1 + p.sin(t) * p.sin(t))
         
         let newPoint = p.createVector(x, y)
         newPoint.letterSize = baseLetterSize
@@ -185,15 +197,24 @@ onMounted(async () => {
       }
       
       p.windowResized = () => {
-        canvasWidth = window.innerWidth
-        canvasHeight = window.innerHeight
+        containerWidth = loaderContainer.value?.clientWidth || window.innerWidth
+        containerHeight = loaderContainer.value?.clientHeight || window.innerHeight
+        canvasWidth = containerWidth
+        canvasHeight = containerHeight
         p.resizeCanvas(canvasWidth, canvasHeight)
 
-        // Recalculer l'échelle
-        scaleFactor = Math.min(canvasWidth, canvasHeight) / 300 // Augmenté de 500 à 300 pour être plus grand
-        baseLetterSize = 30 * scaleFactor
-        baseCaseWidth = 28 * scaleFactor
-        baseCaseHeight = 35 * scaleFactor
+        // Recalculer les tailles
+        const isMobile = window.innerWidth <= 768
+        if (isMobile) {
+          baseLetterSize = 32
+          baseCaseWidth = 36
+          baseCaseHeight = 40
+        } else {
+          scaleFactor = Math.min(canvasWidth, canvasHeight) / 300
+          baseLetterSize = 30 * scaleFactor
+          baseCaseWidth = 28 * scaleFactor
+          baseCaseHeight = 35 * scaleFactor
+        }
       }
     }
 
@@ -254,16 +275,15 @@ const cleanupP5 = () => {
     font-size: 1.1rem;
   }
 
-  // Quand utilisé seul (plein écran)
-  &.loading-state:only-child {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+  // Quand utilisé dans un layout (comme dans main)
+  &.loading-state {
+    position: relative;
+    min-height: 70vh;
     background: var(--color-gray);
-    z-index: 9999;
-    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 }
 
@@ -275,17 +295,18 @@ const cleanupP5 = () => {
 }
 
 .loader-container {
-  width: 100vw;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
+  width: 100%;
+  height: 70vh;
+  position: relative;
+
+  @media (max-width: 768px) {
+    height: 60vh; // Réduire la hauteur sur mobile
+  }
 }
 
 .loader-container :deep(canvas) {
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100% !important;
+  height: 100% !important;
   display: block;
 }
 
@@ -296,7 +317,7 @@ const cleanupP5 = () => {
 
 .error-state {
   h2, div {
-    color: #d32f2f;
+    color: #000; // Noir au lieu de rouge
   }
 }
 

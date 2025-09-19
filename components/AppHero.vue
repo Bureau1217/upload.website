@@ -50,7 +50,6 @@ let wallDamping = 0.85
 let lastMouseMoveTime = 0
 let isMouseOutside = false
 let idleDelay = 1000
-let isMobileAutoMode = false
 
 onMounted(async () => {
   await nextTick()
@@ -87,21 +86,19 @@ onMounted(async () => {
       biennaleCanvas.parent('biennale-container')
       biennaleCanvas.style('display', 'block')
 
-   if (isTouchDevice()) {
-  biennaleCanvas.style('touch-action', 'pan-y')  // autorise le scroll vertical
-} else {
-  biennaleCanvas.style('touch-action', 'none')
-}
+      // Permettre le scroll sur mobile
+      if (isTouchDevice()) {
+        biennaleCanvas.style('touch-action', 'manipulation')
+        biennaleCanvas.style('pointer-events', 'none')
+      } else {
+        biennaleCanvas.style('touch-action', 'none')
+      }
 
       p.textFont(animFont)
       imgOffset = p.floor(p.random(imgs.length))
       p.textAlign(p.CENTER, p.CENTER)
 
-      // Event listeners - désactiver sur mobile pour permettre le scroll
-      if (!isTouchDevice()) {
-        biennaleCanvas.elt.addEventListener('touchstart', preventDefault, { passive: false })
-        biennaleCanvas.elt.addEventListener('touchmove', preventDefault, { passive: false })
-      }
+      // Pas d'event listeners touch sur mobile
 
       // Désactiver les événements souris sur mobile
       if (!isTouchDevice()) {
@@ -124,7 +121,6 @@ onMounted(async () => {
       
       // Sur mobile, démarrer automatiquement le mode animation
       if (isTouchDevice()) {
-        isMobileAutoMode = true
         isIdleMode = true
         idlePath = []
         idleIndex = 0
@@ -132,9 +128,6 @@ onMounted(async () => {
       }
     }
 
-    const preventDefault = (e: Event) => {
-      e.preventDefault()
-    }
 
     const calculateCanvasSize = () => {
       const container = document.getElementById("biennale-container")
@@ -336,39 +329,7 @@ onMounted(async () => {
       }
     }
 
-    p.touchMoved = () => {
-      // Désactiver complètement l'interaction touch sur mobile
-p.touchMoved = () => {
-  // Sur mobile en mode auto, on ne bloque pas le scroll
-  if (isMobileAutoMode) {
-    return; // surtout pas "false"
-  }
-
-  if (p.touches.length > 0) {
-    lastMouseMoveTime = p.millis()
-    if (isIdleMode) isIdleMode = false
-
-    const last = points[points.length - 1]
-    const tx = p.touches[0].x, ty = p.touches[0].y
-    if (!last || p.dist(tx, ty, last.x, last.y) >= scaledLetterSpacing) {
-      addPoint(tx, ty)
-    }
-  }
-  // ne rien retourner (ou "return;")
-}
-      
-      if (p.touches.length > 0) {
-        lastMouseMoveTime = p.millis()
-        if (isIdleMode) isIdleMode = false
-
-        const last = points[points.length - 1]
-        const tx = p.touches[0].x, ty = p.touches[0].y
-        if (!last || p.dist(tx, ty, last.x, last.y) >= scaledLetterSpacing) {
-          addPoint(tx, ty)
-        }
-      }
-      return false
-    }
+    // Pas de touch events sur mobile
 
     p.mouseMoved = () => {
       if (!isMouseOutside && !isTouchDevice()) {

@@ -59,8 +59,13 @@ html {
 body {
   margin: 0;
   padding: 0;
+  padding-top: 80px; // Espace pour le header fixe
   overflow-x: hidden;
   background-color: var(--color-gray);
+
+  @media (max-width: 768px) {
+    padding-top: 65px; // Plus petit sur mobile
+  }
 }
 
 
