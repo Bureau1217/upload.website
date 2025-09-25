@@ -17,17 +17,29 @@
           />
 
           <!-- Lien de téléchargement PDF -->
-          <div v-if="programmePdfs?.length" class="pdf-download">
+          <div class="pdf-download">
             <h3>
-              <a
-                v-for="pdf in programmePdfs"
-                :key="pdf.url"
-                :href="getFileUrl(pdf.url)"
-                download
-                class="pdf-link"
-              >
-                Télécharger la grille horaire
-              </a>
+              <!-- Si un PDF est configuré dans le CMS -->
+              <template v-if="programmePdfs?.length && programmePdfs[0]">
+                <a
+                  :href="getFileUrl(programmePdfs[0].url)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="pdf-link"
+                >
+                  Télécharger la grille horaire
+                </a>
+              </template>
+              <!-- Lien temporaire si aucun PDF configuré -->
+              <template v-else>
+                <a
+                  href="#"
+                  class="pdf-link disabled"
+                  @click.prevent="handleMissingPdf"
+                >
+                  Télécharger la grille horaire
+                </a>
+              </template>
             </h3>
           </div>
         </div>
@@ -81,6 +93,23 @@ const { data, status, error } = await useFetch<CMSFetchData<CMSProgrammeData>>('
           description: true
         }
       },
+      programme_pdf_direct: 'page.programme_pdf',
+      all_files: {
+        query: 'page.files.filterBy("extension", "pdf")',
+        select: {
+          url: true,
+          filename: true,
+          description: true
+        }
+      },
+      pdf_templates: {
+        query: 'page.files.filterBy("template", "pdf")',
+        select: {
+          url: true,
+          filename: true,
+          description: true
+        }
+      },
       children: {
         query: 'page.children().listed()',
         select: {
@@ -124,7 +153,29 @@ const { data, status, error } = await useFetch<CMSFetchData<CMSProgrammeData>>('
 })
 
 const evenements = computed(() => data.value?.result?.children ?? [])
-const programmePdfs = computed(() => data.value?.result?.programme_pdf ?? [])
+const programmePdfs = computed(() => {
+  // Utiliser d'abord les PDFs assignés au champ programme_pdf
+  const assignedPdfs = data.value?.result?.programme_pdf ?? []
+  if (assignedPdfs.length > 0) {
+    return assignedPdfs
+  }
+
+  // Essayer les fichiers avec template PDF
+  const templatePdfs = data.value?.result?.pdf_templates ?? []
+  if (templatePdfs.length > 0) {
+    return templatePdfs
+  }
+
+  // Sinon, filtrer les fichiers PDF par nom pour trouver la grille horaire
+  const allFiles = data.value?.result?.all_files ?? []
+  return allFiles.filter(file => {
+    const filename = file.filename.toLowerCase()
+    return filename.includes('grille') ||
+           filename.includes('horaire') ||
+           filename.includes('programme') ||
+           filename.includes('planning')
+  })
+})
 const planningSchedule = computed(() => data.value?.result?.programme_schedule ?? '')
 
 // Utiliser le composable pour les images CMS
@@ -202,6 +253,11 @@ const onFilterChange = (newFilters: { type: string; date: string }) => {
   filters.value = newFilters
 }
 
+// Gestion du clic sur le PDF manquant
+const handleMissingPdf = () => {
+  alert('Le PDF de la grille horaire n\'est pas encore disponible. Veuillez configurer le fichier PDF dans le panel d\'administration.')
+}
+
 // Debug et gestion d'erreur
 watchEffect(() => {
   if (status.value === 'error') {
@@ -209,7 +265,7 @@ watchEffect(() => {
     console.warn('error:', error.value)
     console.warn('data:', data.value)
   }
-  
+
 })
 </script>
 
@@ -245,11 +301,16 @@ h1 {
   color: var(--color-black);
   text-decoration: underline;
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 1.25rem;
   transition: opacity 0.3s ease;
-  
+
   &:hover {
     opacity: 0.7;
+  }
+
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }
 

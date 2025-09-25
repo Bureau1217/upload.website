@@ -329,6 +329,12 @@ const hasSpecificInfo = computed(() => {
   display: flex;
   align-items: baseline;
   gap: var(--space-s);
+  flex-wrap: nowrap;
+
+  strong {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 
   :deep(a) {
     color: var(--color-black);

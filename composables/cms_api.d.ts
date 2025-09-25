@@ -139,6 +139,17 @@ export type CMSProgrammeData = {
     filename: string
     description?: string
   }>
+  programme_pdf_direct?: string
+  all_files?: Array<{
+    url: string
+    filename: string
+    description?: string
+  }>
+  pdf_templates?: Array<{
+    url: string
+    filename: string
+    description?: string
+  }>
 }
 
 export type SocialNetworkData = {
