@@ -13,7 +13,7 @@
 
       <!-- Section exposants -->
       <section v-if="exposantsData && exposantsData.status === 'ok' && exposantsData.result?.length" class="section">
-        <h2 class="section-title">Exposants</h2>
+        <h2 class="section-title">Graphistes</h2>
         <AppExposantsList :exposants="exposantsData.result" />
       </section>
 
