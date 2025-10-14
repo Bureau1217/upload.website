@@ -26,10 +26,14 @@
           
           <!-- Colonne droite : Image biennale -->
           <div class="content-image-column">
-            <div v-if="data.result.biennale_image" class="image-container">
-              <img :src="getCmsImageUrl(data.result.biennale_image)" 
-                   alt="Image de la biennale" 
-                   class="full-image" />
+            <div v-if="data.result.biennale_images?.length" class="biennale-images">
+              <img
+                v-for="image in data.result.biennale_images"
+                :key="image.url"
+                :src="getCmsImageUrl(image.url)"
+                :alt="image.alt || 'Image de la biennale'"
+                class="full-image"
+              />
             </div>
             <div v-else class="no-image">
               <p>Aucune image disponible</p>
@@ -95,13 +99,21 @@ const { data, status } = await useFetch<CMSFetchData<AproposData>>('/api/CMS_KQL
       biennale_description: true,
       commissariat_block1: true,
       commissariat_block2: true,
-      biennale_image: "page.biennale_image.toFile.url",
+      biennale_images: {
+        query: 'page.biennale_image.toFiles',
+        select: {
+          url: 'file.resize(1200).url',
+          alt: true,
+          width: true,
+          height: true
+        }
+      },
       partners_title: true,
       partners_text: true,
       partners_logos: {
         query: 'page.partners_logos.toFiles',
         select: {
-          url: true,
+          url: 'file.resize(1200).url',
           alt: true,
           width: true,
           height: true
@@ -173,15 +185,16 @@ const { data, status } = await useFetch<CMSFetchData<AproposData>>('/api/CMS_KQL
   flex-direction: column;
 }
 
-.image-container {
-  width: 100%;
+.biennale-images {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
 }
 
 .full-image {
-  width: 60%;
+  width: 100%;
   height: auto;
   display: block;
-  margin: 0 auto;
 }
 
 .credits-section {

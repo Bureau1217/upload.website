@@ -87,7 +87,12 @@ export type AproposData = {
   biennale_description: string
   commissariat_block1: string
   commissariat_block2: string
-  biennale_image: string
+  biennale_images?: Array<{
+    url: string
+    alt: string
+    width: number
+    height: number
+  }>
   partners_title: string
   partners_text: string
   partners_logos?: Array<{
