@@ -206,41 +206,8 @@ const filteredEvents = computed(() => {
     })
   }
 
-  // Helper pour récupérer les données de date
-  const getEventDate = (event: any) => event.dates?.[0]?.date || event.date
-  const getEventStartTime = (event: any) => event.dates?.[0]?.start_time || event.start_time
-
-  // Trier par date et heure
-  return events.sort((a, b) => {
-    const dateA = getEventDate(a)
-    const dateB = getEventDate(b)
-
-    if (!dateA && !dateB) return 0
-    if (!dateA) return 1
-    if (!dateB) return -1
-
-    const timestampA = new Date(dateA).getTime()
-    const timestampB = new Date(dateB).getTime()
-
-    // Si les dates sont différentes, trier par date
-    if (timestampA !== timestampB) {
-      return timestampA - timestampB
-    }
-
-    // Si les dates sont identiques, trier par heure de début
-    const timeA = getEventStartTime(a)
-    const timeB = getEventStartTime(b)
-
-    if (timeA && timeB) {
-      return timeA.localeCompare(timeB)
-    }
-
-    // Si une seule des deux a start_time, celle-ci passe en premier
-    if (timeA && !timeB) return -1
-    if (!timeA && timeB) return 1
-
-    return 0
-  })
+  // Retourner les événements dans l'ordre du CMS (sans tri)
+  return events
 })
 
 // Vérifie s'il y a des filtres actifs
